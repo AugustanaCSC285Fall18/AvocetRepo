@@ -1,2 +1,2 @@
 # AvocetRepo
-Project by Team Avocet
+Chick Video Tracking Project by Team Avocet
