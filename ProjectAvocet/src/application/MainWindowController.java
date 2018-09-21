@@ -13,6 +13,7 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -20,10 +21,11 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 public class MainWindowController {
-	@FXML
-	private ImageView myImageView;
-	@FXML
-	private Slider sliderSeekBar;
+	
+	@FXML private ImageView myImageView;
+	@FXML private Slider sliderSeekBar;
+	@FXML private Button button;
+	
 	private VideoCapture video = new VideoCapture();
 
 	@FXML
