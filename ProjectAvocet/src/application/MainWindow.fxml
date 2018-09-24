@@ -9,10 +9,10 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="508.0" prefWidth="785.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainWindowController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="508.0" prefWidth="785.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainWindowController">
    <children>
       <ImageView fx:id="myImageView" fitHeight="351.0" fitWidth="630.0" layoutX="78.0" layoutY="49.0" pickOnBounds="true" preserveRatio="true" />
-      <Button fx:id="button" layoutX="365.0" layoutY="437.0" mnemonicParsing="false" onAction="#handleBrowse" text="Browse" />
+      <Button fx:id="pausePlay" layoutX="361.0" layoutY="436.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="56.0" text="Pause" />
       <Slider fx:id="sliderSeekBar" layoutX="69.0" layoutY="393.0" prefHeight="14.0" prefWidth="639.0" />
    </children>
 </AnchorPane>

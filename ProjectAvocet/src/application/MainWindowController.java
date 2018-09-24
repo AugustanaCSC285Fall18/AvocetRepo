@@ -24,22 +24,15 @@ public class MainWindowController {
 	
 	@FXML private ImageView myImageView;
 	@FXML private Slider sliderSeekBar;
-	@FXML private Button button;
+	@FXML private Button pausePlay;
 	
 	private VideoCapture video = new VideoCapture();
-
-	@FXML
-	public void handleBrowse() {
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open Video File");
-		Window mainWindow = myImageView.getScene().getWindow();
-		File chosenFile = fileChooser.showOpenDialog(mainWindow);
-		if (chosenFile != null) {
-			video.open(chosenFile.getAbsolutePath());
+	
+	public void startVideo(String filePath) {
+			video.open(filePath);
 			sliderSeekBar.setMax(video.get(Videoio.CV_CAP_PROP_FRAME_COUNT)-1);
+			handleSlider();
 			displayFrame();
-		} 
-
 	}
 
 	@FXML 
