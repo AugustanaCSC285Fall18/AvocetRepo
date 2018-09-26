@@ -46,7 +46,7 @@ public class MainWindowController {
 			}
 		});
 	}
-
+	
 	protected void displayFrame() {
 		Mat frame = new Mat();
 		video.read(frame);
