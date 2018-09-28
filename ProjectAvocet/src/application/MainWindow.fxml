@@ -8,7 +8,7 @@
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainWindowController">
    <children>
       <ImageView fx:id="myImageView" fitHeight="447.0" fitWidth="879.0" layoutX="51.0" layoutY="26.0" pickOnBounds="true" preserveRatio="true" />
-      <Button fx:id="pausePlay" layoutX="473.0" layoutY="552.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="55.0" text="Pause" />
+      <Button fx:id="pausePlay" layoutX="446.0" layoutY="565.0" mnemonicParsing="false" prefHeight="29.0" prefWidth="55.0" text="Pause" />
       <Slider fx:id="sliderSeekBar" layoutX="154.0" layoutY="503.0" prefHeight="14.0" prefWidth="639.0" />
    </children>
 </AnchorPane>

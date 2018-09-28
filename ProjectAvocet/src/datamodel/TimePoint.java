@@ -1,21 +1,21 @@
 package datamodel;
 
-import java.awt.Point;
+import org.opencv.core.Point;
 
 public class TimePoint {
-	private Point pt;     // location
+	private Point pt; // location
 	private int frameNum; // time (measured in frames)
-	
-	public TimePoint(int x, int y, int frameNum) {
-		pt = new Point(x,y);
+
+	public TimePoint(double x, double y, int frameNum) {
+		pt = new Point(x, y);
 		this.frameNum = frameNum;
 	}
-	
-	public int getX() {
+
+	public double getX() {
 		return pt.x;
 	}
-	
-	public int getY() {
+
+	public double getY() {
 		return pt.y;
 	}
 
@@ -24,11 +24,11 @@ public class TimePoint {
 	}
 
 	public String toString() {
-		return "("+pt.x+","+pt.y+"@T="+frameNum +")";
+		return "(" + pt.x + "," + pt.y + "@T=" + frameNum + ")";
 	}
 
 	public double getDistanceTo(TimePoint other) {
-		return pt.distance(other.pt);
+		return Math.sqrt(pt.x * pt.x + pt.y * pt.y);
 	}
-	
+
 }
