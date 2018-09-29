@@ -3,6 +3,7 @@ package application;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -14,6 +15,8 @@ import datamodel.*;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -22,23 +25,22 @@ import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import manualtrack.Clickable;
 
 public class MainWindowController {
 	
 	@FXML private ImageView myImageView;
 	@FXML private Slider sliderSeekBar;
 	@FXML private Button pausePlay;
+	@FXML private ScheduledExecutorService timer;
 	
 	private VideoCapture vidCap = new VideoCapture();
 	private ProjectData project;
+	private AnimalTrack currentAnimal;
 	
 	@FXML public void initialize() {
 		myImageView.setOnMouseClicked((event) -> {
-			TimePoint tp = new TimePoint(event.getX(), event.getY(), 0);
-			System.out.println(tp);
+			project.getTracks().get(0).createTimePoint(event.getX(), event.getY(), 0);
 		});
-
 		
 	}
 	 
