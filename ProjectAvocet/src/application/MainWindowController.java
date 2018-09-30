@@ -22,6 +22,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -30,6 +32,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 public class MainWindowController {
@@ -42,6 +47,8 @@ public class MainWindowController {
 	@FXML private Button newChick;
 	@FXML private TextField chickName;
 	@FXML private Label tracking;
+	@FXML private Button export;
+	@FXML private Canvas canvas;
 	
 	private VideoCapture vidCap = new VideoCapture();
 	private ProjectData project;
@@ -50,12 +57,16 @@ public class MainWindowController {
 	private List<AnimalTrack> track = new ArrayList<AnimalTrack>();
 	
 	@FXML public void initialize() {
-		myImageView.setOnMouseClicked((event) -> {
+		canvas.setOnMouseClicked((event) -> {
 			TimePoint tp = new TimePoint(event.getX(), event.getY(), 0);
 			track.get(chosenChick).add(tp);
+			GraphicsContext gc = canvas.getGraphicsContext2D();
+			gc.setFill(Color.RED);
+		    gc.fillOval(event.getX(), event.getY(), 10, 10);
+			System.out.println(tp);
+			System.out.println(track.get(chosenChick).getID());
+			System.out.println("drawn");
 		});
-
-		
 	}
 	 
 	public void startVideo(String filePath) {
@@ -102,6 +113,7 @@ public class MainWindowController {
 				setChick(i);
 				}
 		}
+		tracking.setText("Tracking: " + track.get(chosenChick).getID());
 	}
 	
 	@FXML public void createChick() {
@@ -120,7 +132,7 @@ public class MainWindowController {
 		chosenChick = index;
 	}
 	
-	public void addTimePoint() {
+	@FXML public void exportData() {
 		
 	}
 }
