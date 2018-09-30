@@ -28,8 +28,7 @@ public class ProjectData {
 	}
 	
 	
-	public void addTrack(String animalID) {
-		AnimalTrack animal = new AnimalTrack(animalID);
-		tracks.add(animal);
+	public void addTrack(AnimalTrack track) {
+		tracks.add(track);
 	}
 }

@@ -4,6 +4,8 @@ package application;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -17,16 +19,16 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
@@ -37,14 +39,17 @@ public class MainWindowController {
 	@FXML private Button pausePlay;
 	@FXML private ComboBox<String> chickSelect;
 	@FXML private Button confirm;
+	@FXML private Button newChick;
+	@FXML private TextField chickName;
+	@FXML private Label tracking;
 	
 	private VideoCapture vidCap = new VideoCapture();
 	private ProjectData project;
-	private ObservableList<String> chickIDs = FXCollections.observableArrayList("Track a new chick");
+	private ObservableList<String> chickIDs = FXCollections.observableArrayList();
+	private int chosenChick;
+	private List<AnimalTrack> track = new ArrayList<AnimalTrack>();
 	
 	@FXML public void initialize() {
-		chickSelect.setValue("Track a new chick");
-		chickSelect.setItems(chickIDs);
 		myImageView.setOnMouseClicked((event) -> {
 			TimePoint tp = new TimePoint(event.getX(), event.getY(), 0);
 			System.out.println(tp);
@@ -91,23 +96,28 @@ public class MainWindowController {
 	
 	@FXML public void chooseChick() throws IOException {
 		String choice = chickSelect.getValue();
-		
-		if (choice.equals("Track a new chick")) {
-			createChick();
-		} else {
-			
+		System.out.println(track.size());
+		for (int i = 0; i < track.size(); i ++) {
+			if (choice.equals(track.get(i).getID())) {
+				setChick(i);
+				}
 		}
 	}
 	
-	public void createChick() throws IOException {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("NewChick.fxml"));
-		AnchorPane root = (AnchorPane)loader.load();
+	@FXML public void createChick() {
+		String name = chickName.getText();
+		chickName.setText("");
+		chickIDs.add(name);
+		chickSelect.setItems(chickIDs);
+		track.add(new AnimalTrack(name));
+	}
 	
-		Scene nextScene = new Scene(root,root.getPrefWidth(),root.getPrefHeight());
-		nextScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+	public ProjectData getProject() {
+		return project;
+	}
 	
-		Stage primary = (Stage) confirm.getScene().getWindow();
-		primary.setScene(nextScene);
+	public void setChick(int index) {
+		chosenChick = index;
 	}
 	
 	public void addTimePoint() {
