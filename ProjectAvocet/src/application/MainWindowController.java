@@ -3,6 +3,7 @@ package application;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -14,26 +15,36 @@ import datamodel.*;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import manualtrack.Clickable;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 
 public class MainWindowController {
 	
 	@FXML private ImageView myImageView;
 	@FXML private Slider sliderSeekBar;
 	@FXML private Button pausePlay;
+	@FXML private ComboBox<String> chickSelect;
+	@FXML private Button confirm;
 	
 	private VideoCapture vidCap = new VideoCapture();
 	private ProjectData project;
+	private ObservableList<String> chickIDs = FXCollections.observableArrayList("Track a new chick");
 	
 	@FXML public void initialize() {
+		chickSelect.setValue("Track a new chick");
+		chickSelect.setItems(chickIDs);
 		myImageView.setOnMouseClicked((event) -> {
 			TimePoint tp = new TimePoint(event.getX(), event.getY(), 0);
 			System.out.println(tp);
@@ -76,5 +87,30 @@ public class MainWindowController {
 	
 	public void createProject(String filePath) throws FileNotFoundException {
 		project = new ProjectData(filePath);
+	}
+	
+	@FXML public void chooseChick() throws IOException {
+		String choice = chickSelect.getValue();
+		
+		if (choice.equals("Track a new chick")) {
+			createChick();
+		} else {
+			
+		}
+	}
+	
+	public void createChick() throws IOException {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("NewChick.fxml"));
+		AnchorPane root = (AnchorPane)loader.load();
+	
+		Scene nextScene = new Scene(root,root.getPrefWidth(),root.getPrefHeight());
+		nextScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+	
+		Stage primary = (Stage) confirm.getScene().getWindow();
+		primary.setScene(nextScene);
+	}
+	
+	public void addTimePoint() {
+		
 	}
 }
