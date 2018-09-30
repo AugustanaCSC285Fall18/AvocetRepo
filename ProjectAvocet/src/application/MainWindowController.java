@@ -52,7 +52,7 @@ public class MainWindowController {
 	@FXML public void initialize() {
 		myImageView.setOnMouseClicked((event) -> {
 			TimePoint tp = new TimePoint(event.getX(), event.getY(), 0);
-			System.out.println(tp);
+			track.get(chosenChick).add(tp);
 		});
 
 		
