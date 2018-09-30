@@ -1,85 +1,85 @@
 package application;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.List;
 
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.videoio.VideoCapture;
-import org.opencv.videoio.Videoio;
 
+import autotracking.AutoTrackListener;
+import autotracking.AutoTracker;
+import datamodel.AnimalTrack;
+import datamodel.ProjectData;
+import datamodel.TimePoint;
 import datamodel.Video;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import Autotrack.AutoTrackListener;
-import Autotrack.Autotrackable;
-import datamodel.ProjectData;
-import datamodel.AnimalTrack;
-import datamodel.TimePoint;
 import utils.UtilsForOpenCV;
 
-public class MainWindowController implements AutoTrackListener{
-	
-	@FXML private ImageView myImageView;
-	@FXML private ImageView videoView;
-	@FXML private Slider sliderSeekBar;
-	@FXML private ProgressBar progressAutoTrack;
-	@FXML private Slider sliderVideoTime;
-	@FXML private TextField textFieldCurFrameNum;
-	@FXML private Button pausePlay;
-	@FXML private TextField textfieldStartFrame;
-	@FXML private TextField textfieldEndFrame;
-	@FXML private Button btnAutotrack;
-	
-	private Video video;
-	private VideoCapture vidCap = new VideoCapture();
-	private Autotrackable autotracker;
-	private ProjectData project;
-	
-	public void startVideo(String filePath) {
-			vidCap.open(filePath);
-			sliderSeekBar.setMax(vidCap.get(Videoio.CV_CAP_PROP_FRAME_COUNT)-1);
-			handleSlider();
-			displayFrame();
-	}
+public class MainWindowController implements AutoTrackListener {
 
-	@FXML 
-	protected void handleSlider() {
-		sliderSeekBar.valueProperty().addListener(new ChangeListener<Number>() {
-			public void changed(ObservableValue<? extends Number> arg0, Number arg1, Number arg2) {
-				if (sliderSeekBar.isValueChanging()) {
-					vidCap.set(Videoio.CAP_PROP_POS_FRAMES, arg2.intValue());
-					displayFrame();
-				}
-			}
-		});
+	@FXML private Button btnBrowse;
+	@FXML private ImageView myImageView;
+	@FXML private Slider sliderVideoTime;
+
+	@FXML private Button btnAutotrack;
+	@FXML private ProgressBar progressAutoTrack;
+
+	
+	private AutoTracker autotracker;
+	private ProjectData project;
+	private Stage stage;
+	
+	@FXML public void initialize() {
+		
+		//FIXME: this quick loading of a specific file and specific settings 
+		//       is for debugging purposes only, since there's no way to specify
+		//       the settings in the GUI right now...
+		//loadVideo("/home/forrest/data/shara_chicks_tracking/sample1.mp4");
+		loadVideo("S:/class/cs/285/sample_videos/sample1.mp4");		
+		project.getVideo().setXPixelsPerCm(6.5); //  these are just rough estimates!
+		project.getVideo().setYPixelsPerCm(6.7);
+
+//		loadVideo("/home/forrest/data/shara_chicks_tracking/lowres/lowres2.avi");
+		//loadVideo("S:/class/cs/285/sample_videos/lowres2.mp4");		
+//		project.getVideo().setXPixelsPerCm(5.5); //  these are just rough estimates!
+//		project.getVideo().setYPixelsPerCm(5.5);
+		
+		sliderVideoTime.valueProperty().addListener((obs, oldV, newV) -> showFrameAt(newV.intValue())); 
 	}
 	
-	protected void displayFrame() {
-		Mat frame = new Mat();
-		vidCap.read(frame);
-		MatOfByte buffer = new MatOfByte();
-		Imgcodecs.imencode(".png", frame, buffer);
-		Image currentFrameImage = new Image(new ByteArrayInputStream(buffer.toArray()));
-		Platform.runLater(new Runnable() {
-			public void run() {
-				myImageView.setImage(currentFrameImage);
-			}
-		});
+	public void initializeWithStage(Stage stage) {
+		this.stage = stage;
+		
+		// bind it so whenever the Scene changes width, the myImageView matches it
+		// (not perfect though... visual problems if the height gets too large.)
+		myImageView.fitWidthProperty().bind(myImageView.getScene().widthProperty());  
+	}
+	
+	@FXML
+	public void handleBrowse()  {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open Video File");
+		File chosenFile = fileChooser.showOpenDialog(stage);
+		if (chosenFile != null) {
+			loadVideo(chosenFile.getPath());
+		}		
 	}
 	
 	public void loadVideo(String filePath) {
@@ -87,20 +87,27 @@ public class MainWindowController implements AutoTrackListener{
 			project = new ProjectData(filePath);
 			Video video = project.getVideo();
 			sliderVideoTime.setMax(video.getTotalNumFrames()-1);
-			//showFrameAt(0);
+			showFrameAt(0);
 		} catch (FileNotFoundException e) {			
 			e.printStackTrace();
 		}
 
 	}
 	
+	public void showFrameAt(int frameNum) {
+		if (autotracker == null || !autotracker.isRunning()) {
+			project.getVideo().setCurrentFrameNum(frameNum);
+			Image curFrame = UtilsForOpenCV.matToJavaFXImage(project.getVideo().readFrame());
+			myImageView.setImage(curFrame);
+			
+		}		
+	}
+	
 	@FXML
 	public void handleStartAutotracking() throws InterruptedException {
 		if (autotracker == null || !autotracker.isRunning()) {
 			Video video = project.getVideo();
-			video.setStartFrameNum(Integer.parseInt(textfieldStartFrame.getText()));
-			video.setEndFrameNum(Integer.parseInt(textfieldEndFrame.getText()));
-			this.autotracker = new Autotrackable();
+			autotracker = new AutoTracker();
 			// Use Observer Pattern to give autotracker a reference to this object, 
 			// and call back to methods in this class to update progress.
 			autotracker.addAutoTrackListener(this);
@@ -115,37 +122,36 @@ public class MainWindowController implements AutoTrackListener{
 		}
 		 
 	}
-	
-	public void createVideo(String filePath) throws FileNotFoundException {
-		video = new Video(filePath);
+
+	// this method will get called repeatedly by the Autotracker after it analyzes each frame
+	@Override
+	public void handleTrackedFrame(Mat frame, int frameNumber, double fractionComplete) {
+		Image imgFrame = UtilsForOpenCV.matToJavaFXImage(frame);
+		// this method is being run by the AutoTracker's thread, so we must
+		// ask the JavaFX UI thread to update some visual properties
+		Platform.runLater(() -> { 
+			myImageView.setImage(imgFrame);
+			progressAutoTrack.setProgress(fractionComplete);
+			sliderVideoTime.setValue(frameNumber);
+		});		
+	}
+
+	@Override
+	public void trackingComplete(List<AnimalTrack> trackedSegments) {
+		project.getUnassignedSegments().clear();
+		project.getUnassignedSegments().addAll(trackedSegments);
+
+		for (AnimalTrack track: trackedSegments) {
+			System.out.println(track);
+//			System.out.println("  " + track.getPositions());
+		}
+		Platform.runLater(() -> { 
+			progressAutoTrack.setProgress(1.0);
+			btnAutotrack.setText("Start auto-tracking");
+		});	
+		
 	}
 	
-	// this method will get called repeatedly by the Autotracker after it analyzes each frame
-		@Override
-		public void handleTrackedFrame(Mat frame, int frameNumber, double fractionComplete) {
-			Image imgFrame = UtilsForOpenCV.matToJavaFXImage(frame);
-			// this method is being run by the AutoTracker's thread, so we must
-			// ask the JavaFX UI thread to update some visual properties
-			Platform.runLater(() -> { 
-				videoView.setImage(imgFrame);
-				progressAutoTrack.setProgress(fractionComplete);
-				sliderVideoTime.setValue(frameNumber);
-				textFieldCurFrameNum.setText(String.format("%05d",frameNumber));
-			});		
-		}
-
-		@Override
-		public void trackingComplete(List<AnimalTrack> trackedSegments) {
-			project.getUnassignedSegments().clear();
-			project.getUnassignedSegments().addAll(trackedSegments);
-
-			for (AnimalTrack track: trackedSegments) {
-				System.out.println(track);
-//				System.out.println("  " + track.getPositions());
-			}
-			Platform.runLater(() -> { 
-				progressAutoTrack.setProgress(1.0);
-				btnAutotrack.setText("Start auto-tracking");
-			});	
-		}
+	
+	
 }

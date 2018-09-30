@@ -1,4 +1,4 @@
-package Autotrack;
+package autotracking;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 public class SingleFrameShapeFinder {
-
+	
 	private Mat emptyBackgroundFrame;
 	private double brightnessThreshold;
 	private double minDetectedShapeArea;
@@ -78,5 +78,3 @@ public class SingleFrameShapeFinder {
 	
 
 }
-
-

@@ -36,12 +36,13 @@ public class VideoPlayerController {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
 		AnchorPane root = (AnchorPane)loader.load();
 		MainWindowController nextController = loader.getController();
-		nextController.startVideo(chosenFile.getAbsolutePath());
 		
 		Scene nextScene = new Scene(root,root.getPrefWidth(),root.getPrefHeight());
 		nextScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 		
 		Stage primary = (Stage) btnStart.getScene().getWindow();
+		nextController.initializeWithStage(primary);
+		nextController.loadVideo(chosenFile.getAbsolutePath());
 		primary.setScene(nextScene);
 	}
 	

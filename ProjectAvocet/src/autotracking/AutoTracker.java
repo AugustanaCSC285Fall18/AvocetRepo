@@ -1,4 +1,4 @@
-package Autotrack;
+package autotracking;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,7 +14,7 @@ import datamodel.TimePoint;
 import datamodel.Video;
 import javafx.concurrent.Task;
 
-public class Autotrackable {
+public class AutoTracker {
 
 	private List<AutoTrackListener> listeners = new ArrayList<>();
 	private Task<Void> task;
@@ -29,10 +29,10 @@ public class Autotrackable {
 	private final double maxTimeGapWithinSegment = 0.5; // end a segment after this many seconds with no point detected
 	private final double maxMovementSpeed = 80.0; // guess for chicks
 
-	//public AutoTracker() {
+	public AutoTracker() {
 		//TODO: pass in some thresholds/parameters for fine-tuning the auto-tracking 
 		//        instead of declaring them all as constants up above....
-	//}
+	}
 	
 	/**
 	 * Starts the auto-tracking process
@@ -55,7 +55,7 @@ public class Autotrackable {
 		List<AnimalTrack> archivedTrackedSegments = new ArrayList<>();
 		List<AnimalTrack> currentlyTrackingSegments = new ArrayList<>();
 
-		vid.setCurrentFrameNum(vid.getStartFrameNum());
+		vid.setCurrentFrameNum(vid.getEmptyFrameNum());
 		Mat emptyFrame = vid.readFrame();
 
 
@@ -154,9 +154,4 @@ public class Autotrackable {
 		listeners.add(listener);
 	}
 	
-
-		
-
-	}
-
-
+}

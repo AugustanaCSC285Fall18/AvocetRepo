@@ -1,4 +1,4 @@
-package Autotrack;
+package autotracking;
 
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
@@ -6,7 +6,6 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
 public class DetectedShape {
-
 	private MatOfPoint contour;
 	private Moments moments;
 
@@ -31,4 +30,3 @@ public class DetectedShape {
 	}
 
 }
-
