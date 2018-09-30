@@ -11,6 +11,7 @@ public class Video {
 
 	private String filePath;
 	private VideoCapture vidCap;
+	private int emptyFrameNum;
 	private int startFrameNum;
 	private int endFrameNum;
 
@@ -21,8 +22,16 @@ public class Video {
 	public Video(String filePath) throws FileNotFoundException {
 		this.filePath = filePath;
 		this.vidCap = new VideoCapture(filePath);
+		this.emptyFrameNum = 0;
+		this.startFrameNum = 0;
+		this.endFrameNum = this.getTotalNumFrames() - 1;
+
+		int frameWidth = (int) vidCap.get(Videoio.CAP_PROP_FRAME_WIDTH);
+		int frameHeight = (int) vidCap.get(Videoio.CAP_PROP_FRAME_HEIGHT);
+		this.arenaBounds = new Rectangle(0, 0, frameWidth, frameHeight);
 		if (!vidCap.isOpened()) {
 			throw new FileNotFoundException("Unable to open video file: " + filePath);
+
 		}
 	}
 
@@ -40,6 +49,24 @@ public class Video {
 
 	public int getStartFrameNum() {
 		return startFrameNum;
+	}
+
+	public void setCurrentFrameNum(int seekFrame) {
+		vidCap.set(Videoio.CV_CAP_PROP_POS_FRAMES, (double) seekFrame);
+	}
+
+	public int getCurrentFrameNum() {
+		return (int) vidCap.get(Videoio.CV_CAP_PROP_POS_FRAMES);
+	}
+
+	public Mat readFrame() {
+		Mat frame = new Mat();
+		vidCap.read(frame);
+		return frame;
+	}
+
+	public int getEmptyFrame() {
+		return emptyFrameNum;
 	}
 
 	public void setStartFrameNum(int startFrameNum) {
@@ -68,6 +95,10 @@ public class Video {
 
 	public void setYPixelsPerCm(double yPixelsPerCm) {
 		this.yPixelsPerCm = yPixelsPerCm;
+	}
+
+	public double getAvgPixelsPerCm() {
+		return (getXPixelsPerCm() - getYPixelsPerCm()) / 2;
 	}
 
 	public Rectangle getArenaBounds() {
