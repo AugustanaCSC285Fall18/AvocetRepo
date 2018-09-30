@@ -28,6 +28,10 @@ public class AnimalTrack {
 	public TimePoint getTimePointAtIndex(int index) {
 		return positions.get(index);
 	}
+	
+	public List<TimePoint> getPositions() {
+		return positions;
+	}
 
 	/**
 	 * Returns the TimePoint at the specified time, or null

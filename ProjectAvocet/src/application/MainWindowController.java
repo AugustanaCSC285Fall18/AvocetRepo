@@ -3,6 +3,8 @@ package application;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.util.Arrays;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 
+import csv.*;
 import datamodel.*;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -200,11 +203,6 @@ public class MainWindowController implements AutoTrackListener{
 		chosenChick = index;
 	}
 	
-	@FXML public void exportData() {
-		
-
-	}
-	
 	// this method will get called repeatedly by the Autotracker after it analyzes each frame
 		@Override
 		public void handleTrackedFrame(Mat frame, int frameNumber, double fractionComplete) {
@@ -232,5 +230,25 @@ public class MainWindowController implements AutoTrackListener{
 				progressAutoTrack.setProgress(1.0);
 				btnAutotrack.setText("Start auto-tracking");
 			});	
+		}
+		
+		@FXML public void exportData() throws IOException {
+			String csvFile = "C:\\Users\\mikew\\chicks.csv";
+			try {
+				FileWriter writer = new FileWriter(csvFile);
+				CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "X-Coordinate", "Y-Coordinate", "Frame Number"), ',');
+				for (int i = 0; i < track.size(); i++) {
+					for (int j = 0; j < track.get(i).getPositions().size(); j++) {
+						String x = "" + track.get(i).getPositions().get(j).getX();
+						String y = "" + track.get(i).getPositions().get(j).getY();
+						String frame = "" + track.get(i).getPositions().get(j).getFrameNum();
+						CSVUtils.writeLine(writer, Arrays.asList(track.get(i).getID(), x, y, frame), ',');
+					}
+				}
+				writer.flush();
+				writer.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 }
