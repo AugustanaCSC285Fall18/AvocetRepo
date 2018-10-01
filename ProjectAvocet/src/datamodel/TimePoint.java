@@ -1,6 +1,5 @@
 package datamodel;
 
-
 public class TimePoint implements Comparable<TimePoint> {
 	private double x;     // location
 	private double y;      

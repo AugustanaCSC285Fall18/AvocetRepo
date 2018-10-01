@@ -26,6 +26,8 @@ public class ProjectData {
 	public List<AnimalTrack> getUnassignedSegments() {
 		return unassignedSegments;
 	}
-
 	
+	public void addTrack(AnimalTrack track) {
+		tracks.add(track);
+	}
 }

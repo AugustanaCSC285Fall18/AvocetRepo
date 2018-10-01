@@ -16,7 +16,7 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("VideoPlayer.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
 			AnchorPane root = (AnchorPane)loader.load();
 			
 			Scene scene = new Scene(root,root.getPrefWidth(),root.getPrefHeight());

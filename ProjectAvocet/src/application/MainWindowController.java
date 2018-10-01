@@ -2,66 +2,113 @@ package application;
 
 import java.io.File;
 import java.io.FileInputStream;
+
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.util.Arrays;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
 import java.util.List;
 
 import org.opencv.core.Mat;
+import org.opencv.videoio.VideoCapture;
 
-import autotracking.AutoTrackListener;
-import autotracking.AutoTracker;
+import autotracking.*;
 import datamodel.AnimalTrack;
 import datamodel.ProjectData;
 import datamodel.TimePoint;
 import datamodel.Video;
+import csv.*;
+import datamodel.*;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+
 import javafx.scene.control.ProgressBar;
+
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+
 import javafx.scene.layout.Pane;
+
+
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import utils.UtilsForOpenCV;
 
-public class MainWindowController implements AutoTrackListener {
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
 
-	@FXML private Button btnBrowse;
+
+public class MainWindowController implements AutoTrackListener{
+	
 	@FXML private ImageView myImageView;
 	@FXML private Slider sliderVideoTime;
+
+	@FXML private TextField textFieldCurFrameNum;
+	@FXML private Button pausePlay;
+
+	@FXML private TextField textfieldStartFrame;
+	@FXML private TextField textfieldEndFrame;
 
 	@FXML private Button btnAutotrack;
 	@FXML private ProgressBar progressAutoTrack;
 
+	@FXML private ComboBox<String> chickSelect;
+	@FXML private Button confirm;
+	@FXML private Button newChick;
+	@FXML private TextField chickName;
+	@FXML private Label tracking;
+	@FXML private Button export;
+	@FXML private Canvas canvas;
+
 	
+	private VideoCapture vidCap = new VideoCapture();
 	private AutoTracker autotracker;
 	private ProjectData project;
 	private Stage stage;
+	private ObservableList<String> chickIDs = FXCollections.observableArrayList();
+	private int chosenChick;
+	private List<AnimalTrack> track = new ArrayList<AnimalTrack>();
 	
 	@FXML public void initialize() {
-		
-		//FIXME: this quick loading of a specific file and specific settings 
-		//       is for debugging purposes only, since there's no way to specify
-		//       the settings in the GUI right now...
-		//loadVideo("/home/forrest/data/shara_chicks_tracking/sample1.mp4");
-		loadVideo("S:/class/cs/285/sample_videos/sample1.mp4");		
-		project.getVideo().setXPixelsPerCm(6.5); //  these are just rough estimates!
-		project.getVideo().setYPixelsPerCm(6.7);
-
-//		loadVideo("/home/forrest/data/shara_chicks_tracking/lowres/lowres2.avi");
-		//loadVideo("S:/class/cs/285/sample_videos/lowres2.mp4");		
-//		project.getVideo().setXPixelsPerCm(5.5); //  these are just rough estimates!
-//		project.getVideo().setYPixelsPerCm(5.5);
-		
+		loadVideo("S:/class/cs/285/sample_videos/sample1.mp4");	
 		sliderVideoTime.valueProperty().addListener((obs, oldV, newV) -> showFrameAt(newV.intValue())); 
+		canvas.setOnMouseClicked((event) -> {
+			TimePoint tp = new TimePoint(event.getX(), event.getY(), 0);
+			track.get(chosenChick).add(tp);
+			GraphicsContext gc = canvas.getGraphicsContext2D();
+			gc.setFill(Color.RED);
+		    gc.fillOval(event.getX(), event.getY(), 10, 10);
+			System.out.println(tp);
+			System.out.println(track.get(chosenChick).getID());
+			System.out.println("drawn");
+		});
+		
 	}
 	
 	public void initializeWithStage(Stage stage) {
@@ -82,6 +129,7 @@ public class MainWindowController implements AutoTrackListener {
 		}		
 	}
 	
+
 	public void loadVideo(String filePath) {
 		try {
 			project = new ProjectData(filePath);
@@ -122,7 +170,42 @@ public class MainWindowController implements AutoTrackListener {
 		}
 		 
 	}
+	
+	//public void createVideo(String filePath) throws FileNotFoundException {
+	//	video = new Video(filePath);
+	//}
 
+	public void createProject(String filePath) throws FileNotFoundException {
+		project = new ProjectData(filePath);
+	}
+	
+	@FXML public void chooseChick() throws IOException {
+		String choice = chickSelect.getValue();
+		System.out.println(track.size());
+		for (int i = 0; i < track.size(); i ++) {
+			if (choice.equals(track.get(i).getID())) {
+				setChick(i);
+				}
+		}
+		tracking.setText("Tracking: " + track.get(chosenChick).getID());
+	}
+	
+	@FXML public void createChick() {
+		String name = chickName.getText();
+		chickName.setText("");
+		chickIDs.add(name);
+		chickSelect.setItems(chickIDs);
+		track.add(new AnimalTrack(name));
+	}
+	
+	public ProjectData getProject() {
+		return project;
+	}
+	
+	public void setChick(int index) {
+		chosenChick = index;
+	}
+	
 	// this method will get called repeatedly by the Autotracker after it analyzes each frame
 	@Override
 	public void handleTrackedFrame(Mat frame, int frameNumber, double fractionComplete) {
@@ -154,4 +237,24 @@ public class MainWindowController implements AutoTrackListener {
 	
 	
 	
+		
+		@FXML public void exportData() throws IOException {
+			String csvFile = "C:\\Users\\mikew\\chicks.csv";
+			try {
+				FileWriter writer = new FileWriter(csvFile);
+				CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "X-Coordinate", "Y-Coordinate", "Frame Number"), ',');
+				for (int i = 0; i < track.size(); i++) {
+					for (int j = 0; j < track.get(i).getPositions().size(); j++) {
+						String x = "" + track.get(i).getPositions().get(j).getX();
+						String y = "" + track.get(i).getPositions().get(j).getY();
+						String frame = "" + track.get(i).getPositions().get(j).getFrameNum();
+						CSVUtils.writeLine(writer, Arrays.asList(track.get(i).getID(), x, y, frame), ',');
+					}
+				}
+				writer.flush();
+				writer.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 }

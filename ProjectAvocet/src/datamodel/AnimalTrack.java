@@ -5,7 +5,7 @@ import java.util.List;
 
 public class AnimalTrack {
 	private String animalID;
-	
+	private static final String UNNAMED_ID = "<<unassigned>>";
 	private List<TimePoint> positions;
 	
 	public AnimalTrack(String id) {
@@ -17,8 +17,20 @@ public class AnimalTrack {
 		positions.add(pt);
 	}
 	
+	public boolean hasIDAssigned() {
+		return !animalID.equals(UNNAMED_ID);
+	}
+	
+	public String getID() {
+		return animalID;
+	}
+	
 	public TimePoint getTimePointAtIndex(int index) {
 		return positions.get(index);
+	}
+	
+	public List<TimePoint> getPositions() {
+		return positions;
 	}
 
 	/**
@@ -43,8 +55,10 @@ public class AnimalTrack {
 	}
 	
 	public String toString() {
-		int startFrame = positions.get(0).getFrameNum();
-		int endFrame = getFinalTimePoint().getFrameNum();
-		return "AnimalTrack[id="+ animalID + ",numPts=" + positions.size()+" start=" + startFrame + " end=" + endFrame +"]"; 
+		return "AnimalTrack[id="+ animalID + ",len=" + positions.size()+"]";
+
+		//int startFrame = positions.get(0).getFrameNum();
+		//int endFrame = getFinalTimePoint().getFrameNum();
+		//return "AnimalTrack[id="+ animalID + ",numPts=" + positions.size()+" start=" + startFrame + " end=" + endFrame +"]"; 
 	}
 }
