@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.opencv.core.Mat;
 import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.Videoio;
 
 import autotracking.*;
 import datamodel.AnimalTrack;
@@ -99,14 +100,11 @@ public class MainWindowController implements AutoTrackListener{
 		loadVideo("S:/class/cs/285/sample_videos/sample1.mp4");	
 		sliderVideoTime.valueProperty().addListener((obs, oldV, newV) -> showFrameAt(newV.intValue())); 
 		canvas.setOnMouseClicked((event) -> {
-			TimePoint tp = new TimePoint(event.getX(), event.getY(), 0);
+			TimePoint tp = new TimePoint(event.getX(), event.getY(), (int) vidCap.get(Videoio.CAP_PROP_POS_FRAMES));
 			track.get(chosenChick).add(tp);
 			GraphicsContext gc = canvas.getGraphicsContext2D();
 			gc.setFill(Color.RED);
-		    gc.fillOval(event.getX(), event.getY(), 10, 10);
-			System.out.println(tp);
-			System.out.println(track.get(chosenChick).getID());
-			System.out.println("drawn");
+		    gc.fillOval(event.getX() - 5, event.getY() - 5, 10, 10);
 		});
 		
 	}
@@ -188,6 +186,8 @@ public class MainWindowController implements AutoTrackListener{
 				}
 		}
 		tracking.setText("Tracking: " + track.get(chosenChick).getID());
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 	}
 	
 	@FXML public void createChick() {
@@ -253,6 +253,8 @@ public class MainWindowController implements AutoTrackListener{
 				}
 				writer.flush();
 				writer.close();
+				Stage close = (Stage) export.getScene().getWindow();
+				close.close();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
