@@ -97,10 +97,10 @@ public class MainWindowController implements AutoTrackListener{
 	private List<AnimalTrack> track = new ArrayList<AnimalTrack>();
 	
 	@FXML public void initialize() {
-		loadVideo("S:/class/cs/285/sample_videos/sample1.mp4");	
-		sliderVideoTime.valueProperty().addListener((obs, oldV, newV) -> showFrameAt(newV.intValue())); 
+		sliderVideoTime.valueProperty().addListener((obs, oldV, newV) -> showFrameAt(newV.intValue()));
 		canvas.setOnMouseClicked((event) -> {
-			TimePoint tp = new TimePoint(event.getX(), event.getY(), (int) vidCap.get(Videoio.CAP_PROP_POS_FRAMES));
+			TimePoint tp = new TimePoint(event.getX(), event.getY(), (int) project.getVideo().getCurrentFrameNum());
+			System.out.println(tp);
 			track.get(chosenChick).add(tp);
 			GraphicsContext gc = canvas.getGraphicsContext2D();
 			gc.setFill(Color.RED);
@@ -131,9 +131,10 @@ public class MainWindowController implements AutoTrackListener{
 	public void loadVideo(String filePath) {
 		try {
 			project = new ProjectData(filePath);
-			Video video = project.getVideo();
-			sliderVideoTime.setMax(video.getTotalNumFrames()-1);
+			sliderVideoTime.setMax(project.getVideo().getTotalNumFrames()-1);
 			showFrameAt(0);
+			project.getVideo().setXPixelsPerCm(6.5); //  these are just rough estimates!
+			project.getVideo().setYPixelsPerCm(6.7);
 		} catch (FileNotFoundException e) {			
 			e.printStackTrace();
 		}
@@ -196,6 +197,7 @@ public class MainWindowController implements AutoTrackListener{
 		chickIDs.add(name);
 		chickSelect.setItems(chickIDs);
 		track.add(new AnimalTrack(name));
+		project.getTracks().add(new AnimalTrack(name));
 	}
 	
 	public ProjectData getProject() {
