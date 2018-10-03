@@ -86,6 +86,8 @@ public class MainWindowController implements AutoTrackListener{
 	@FXML private Label tracking;
 	@FXML private Button export;
 	@FXML private Canvas canvas;
+	@FXML private Button forward;
+	@FXML private Button previous;
 
 	
 	private VideoCapture vidCap = new VideoCapture();
@@ -154,6 +156,8 @@ public class MainWindowController implements AutoTrackListener{
 	public void handleStartAutotracking() throws InterruptedException {
 		if (autotracker == null || !autotracker.isRunning()) {
 			Video video = project.getVideo();
+			video.setStartFrameNum(Integer.parseInt(textfieldStartFrame.getText()));
+			video.setEndFrameNum(Integer.parseInt(textfieldEndFrame.getText()));
 			autotracker = new AutoTracker();
 			// Use Observer Pattern to give autotracker a reference to this object, 
 			// and call back to methods in this class to update progress.
@@ -260,5 +264,13 @@ public class MainWindowController implements AutoTrackListener{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+		
+		@FXML public void forwardOneSec() {
+			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
+		}
+		
+		@FXML public void previousOneSec() {
+			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate());
 		}
 }
