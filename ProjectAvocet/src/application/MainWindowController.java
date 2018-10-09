@@ -106,7 +106,7 @@ public class MainWindowController implements AutoTrackListener{
 			track.get(chosenChick).add(tp);
 			GraphicsContext gc = canvas.getGraphicsContext2D();
 			gc.setFill(Color.RED);
-		    gc.fillOval(event.getX() - 5, event.getY() - 5, 10, 10);
+			gc.fillOval(event.getX() - 5, event.getY() - 5, 10, 10);
 		});
 		
 	}
