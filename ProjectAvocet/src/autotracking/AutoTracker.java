@@ -65,7 +65,7 @@ public class AutoTracker {
 		
 		vid.setCurrentFrameNum(vid.getStartFrameNum());
 		for (int fNum = vid.getStartFrameNum(); fNum <= vid.getEndFrameNum(); fNum++) {
-
+			
 			// archive all the AnimalTracks that we haven't matched any points to for a while
 			Iterator<AnimalTrack> it = currentlyTrackingSegments.iterator();
 			while (it.hasNext()) {

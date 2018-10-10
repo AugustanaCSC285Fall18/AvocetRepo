@@ -10,6 +10,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="546.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainWindowController">
    <children>
@@ -38,10 +39,14 @@
       <TextField fx:id="textfieldStartFrame" layoutX="82.0" layoutY="464.0" prefHeight="25.0" prefWidth="100.0" text="0" />
       <Label layoutX="191.0" layoutY="464.0" prefHeight="25.0" prefWidth="67.0" text="End Frame:" />
       <TextField fx:id="textfieldEndFrame" layoutX="260.0" layoutY="464.0" prefHeight="25.0" prefWidth="100.0" text="3000" />
-      <Label layoutX="14.0" layoutY="500.0" prefHeight="25.0" prefWidth="85.0" text="Current Frame:" />
+      <Label layoutX="14.0" layoutY="499.0" prefHeight="25.0" prefWidth="85.0" text="Current Frame:" />
       <Button fx:id="foward" layoutX="364.0" layoutY="425.0" mnemonicParsing="false" onAction="#forwardOneSec" text="Forward" />
       <Button fx:id="previous" layoutX="232.0" layoutY="425.0" mnemonicParsing="false" onAction="#previousOneSec" text="Previous" />
-      <Label fx:id="labelCurFrameNum" layoutX="99.0" layoutY="504.0" prefHeight="25.0" prefWidth="100.0" text="0" />
+      <Label fx:id="labelCurFrameNum" layoutX="99.0" layoutY="500.0" prefHeight="25.0" prefWidth="100.0" text="0">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
 
 
   </children> 

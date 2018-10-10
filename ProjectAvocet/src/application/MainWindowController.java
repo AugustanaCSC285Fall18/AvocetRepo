@@ -73,8 +73,6 @@ public class MainWindowController implements AutoTrackListener {
 
 	@FXML private Label labelCurFrameNum;
 	@FXML private Button pausePlay;
-	@FXML private TextField textFieldCurFrameNum;
-	
 
 	@FXML
 	private TextField textfieldStartFrame;
@@ -107,6 +105,7 @@ public class MainWindowController implements AutoTrackListener {
 
 	private AutoTracker autotracker;
 	private ProjectData project;
+	private Video video;
 	private Stage stage;
 	private ObservableList<String> chickIDs = FXCollections.observableArrayList();
 	private int chosenChickIndex;
@@ -181,14 +180,13 @@ public class MainWindowController implements AutoTrackListener {
 	@FXML
 	public void handleStartAutotracking() throws InterruptedException {
 		if (autotracker == null || !autotracker.isRunning()) {
-			Video video = project.getVideo();
+			this.video = project.getVideo();
 			video.setStartFrameNum(Integer.parseInt(textfieldStartFrame.getText()));
 			video.setEndFrameNum(Integer.parseInt(textfieldEndFrame.getText()));
 			autotracker = new AutoTracker();
 			// Use Observer Pattern to give autotracker a reference to this object,
 			// and call back to methods in this class to update progress.
 			autotracker.addAutoTrackListener(this);
-
 			// this method will start a new thread to run AutoTracker in the background
 			// so that we don't freeze up the main JavaFX UI thread.
 			autotracker.startAnalysis(video);
