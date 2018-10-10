@@ -90,20 +90,18 @@ public class MainWindowController implements AutoTrackListener{
 	@FXML private Button previous;
 
 	
-	private VideoCapture vidCap = new VideoCapture();
 	private AutoTracker autotracker;
 	private ProjectData project;
 	private Stage stage;
 	private ObservableList<String> chickIDs = FXCollections.observableArrayList();
-	private int chosenChick;
-	private List<AnimalTrack> track = new ArrayList<AnimalTrack>();
+	private int chosenChickIndex;
 	
 	@FXML public void initialize() {
 		sliderVideoTime.valueProperty().addListener((obs, oldV, newV) -> showFrameAt(newV.intValue()));
 		canvas.setOnMouseClicked((event) -> {
 			TimePoint tp = new TimePoint(event.getX(), event.getY(), (int) project.getVideo().getCurrentFrameNum());
 			System.out.println(tp);
-			track.get(chosenChick).add(tp);
+			project.getTracks().get(chosenChickIndex).add(tp);
 			GraphicsContext gc = canvas.getGraphicsContext2D();
 			gc.setFill(Color.RED);
 			gc.fillOval(event.getX() - 5, event.getY() - 5, 10, 10);
@@ -184,13 +182,12 @@ public class MainWindowController implements AutoTrackListener{
 	
 	@FXML public void chooseChick() throws IOException {
 		String choice = chickSelect.getValue();
-		System.out.println(track.size());
-		for (int i = 0; i < track.size(); i ++) {
-			if (choice.equals(track.get(i).getID())) {
-				setChick(i);
+		for (int i = 0; i < project.getTracks().size(); i ++) {
+			if (choice.equals(project.getTracks().get(i).getID())) {
+				chosenChickIndex = i;
 				}
 		}
-		tracking.setText("Tracking: " + track.get(chosenChick).getID());
+		tracking.setText("Tracking: " + project.getTracks().get(chosenChickIndex).getID());
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 	}
@@ -200,16 +197,7 @@ public class MainWindowController implements AutoTrackListener{
 		chickName.setText("");
 		chickIDs.add(name);
 		chickSelect.setItems(chickIDs);
-		track.add(new AnimalTrack(name));
 		project.getTracks().add(new AnimalTrack(name));
-	}
-	
-	public ProjectData getProject() {
-		return project;
-	}
-	
-	public void setChick(int index) {
-		chosenChick = index;
 	}
 	
 	// this method will get called repeatedly by the Autotracker after it analyzes each frame
@@ -232,7 +220,7 @@ public class MainWindowController implements AutoTrackListener{
 
 		for (AnimalTrack track: trackedSegments) {
 			System.out.println(track);
-//			System.out.println("  " + track.getPositions());
+
 		}
 		Platform.runLater(() -> { 
 			progressAutoTrack.setProgress(1.0);
@@ -249,12 +237,15 @@ public class MainWindowController implements AutoTrackListener{
 			try {
 				FileWriter writer = new FileWriter(csvFile);
 				CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "X-Coordinate", "Y-Coordinate", "Frame Number"), ',');
-				for (int i = 0; i < track.size(); i++) {
-					for (int j = 0; j < track.get(i).getPositions().size(); j++) {
-						String x = "" + track.get(i).getPositions().get(j).getX();
-						String y = "" + track.get(i).getPositions().get(j).getY();
-						String frame = "" + track.get(i).getPositions().get(j).getFrameNum();
-						CSVUtils.writeLine(writer, Arrays.asList(track.get(i).getID(), x, y, frame), ',');
+				for (int i = 0; i < project.getTracks().size(); i++) {
+					for (int j = 0; j < project.getTracks().get(i).getPositions().size(); j++) {
+						AnimalTrack currentChick = project.getTracks().get(i);
+						TimePoint currentTimePoint = currentChick.getPositions().get(j);
+						String name = "" + currentChick.getID();
+						String x = "" + currentTimePoint.getX();
+						String y = "" + currentTimePoint.getY();
+						String frame = "" + currentTimePoint.getFrameNum();
+						CSVUtils.writeLine(writer, Arrays.asList(name, x, y, frame), ',');
 					}
 				}
 				writer.flush();

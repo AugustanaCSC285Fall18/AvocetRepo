@@ -53,7 +53,7 @@ class AnimalTrackTest {
 		TimePoint tp2 = new TimePoint(124, 200, 25);
 		TimePoint tp3 = new TimePoint(75, 168, 50);
 		
-		List positions = test.getPositions();
+		List<TimePoint> positions = test.getPositions();
 		
 		assertEquals(tp1, positions.get(0));
 		assertEquals(tp2, positions.get(1));
