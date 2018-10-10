@@ -70,7 +70,7 @@ public class MainWindowController implements AutoTrackListener{
 	@FXML private ImageView myImageView;
 	@FXML private Slider sliderVideoTime;
 
-	@FXML private TextField textFieldCurFrameNum;
+	@FXML private Label labelCurFrameNum;
 	@FXML private Button pausePlay;
 
 	@FXML private TextField textfieldStartFrame;
@@ -146,7 +146,8 @@ public class MainWindowController implements AutoTrackListener{
 			project.getVideo().setCurrentFrameNum(frameNum);
 			Image curFrame = UtilsForOpenCV.matToJavaFXImage(project.getVideo().readFrame());
 			myImageView.setImage(curFrame);
-			
+			String currentFrame = "" + frameNum;
+			labelCurFrameNum.setText(currentFrame);
 		}		
 	}
 	
@@ -264,4 +265,11 @@ public class MainWindowController implements AutoTrackListener{
 		@FXML public void previousOneSec() {
 			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate());
 		}
+		
+//		@FXML public void displayCurrentFrame() {
+//			textFieldCurFrameNum.setEditable(false);
+//			String currentFrame = "" + project.getVideo().getCurrentFrameNum();
+//			textFieldCurFrameNum.setText(currentFrame);
+//		}
+		
 }
