@@ -9,34 +9,22 @@ import java.io.FileWriter;
 import java.util.Arrays;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import java.util.List;
 
 import org.opencv.core.Mat;
-import org.opencv.videoio.VideoCapture;
-import org.opencv.videoio.Videoio;
 
 import autotracking.*;
 import datamodel.AnimalTrack;
 import datamodel.ProjectData;
 import datamodel.TimePoint;
 import datamodel.Video;
-import csv.*;
-import datamodel.*;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 
@@ -55,7 +43,6 @@ import javafx.scene.layout.Pane;
 
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import utils.UtilsForOpenCV;
 
 import javafx.scene.layout.AnchorPane;
@@ -233,28 +220,9 @@ public class MainWindowController implements AutoTrackListener{
 	
 		
 		@FXML public void exportData() throws IOException {
-			String csvFile = "C:\\Users\\mikew\\chicks.csv";
-			try {
-				FileWriter writer = new FileWriter(csvFile);
-				CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "X-Coordinate", "Y-Coordinate", "Frame Number"), ',');
-				for (int i = 0; i < project.getTracks().size(); i++) {
-					for (int j = 0; j < project.getTracks().get(i).getPositions().size(); j++) {
-						AnimalTrack currentChick = project.getTracks().get(i);
-						TimePoint currentTimePoint = currentChick.getPositions().get(j);
-						String name = "" + currentChick.getID();
-						String x = "" + currentTimePoint.getX();
-						String y = "" + currentTimePoint.getY();
-						String frame = "" + currentTimePoint.getFrameNum();
-						CSVUtils.writeLine(writer, Arrays.asList(name, x, y, frame), ',');
-					}
-				}
-				writer.flush();
-				writer.close();
-				Stage close = (Stage) export.getScene().getWindow();
-				close.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			project.exportProject();
+			Stage close = (Stage) export.getScene().getWindow();
+			close.close();
 		}
 		
 		@FXML public void forwardOneSec() {
