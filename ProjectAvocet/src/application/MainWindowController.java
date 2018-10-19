@@ -102,13 +102,16 @@ public class MainWindowController implements AutoTrackListener {
 	@FXML
 	public void initialize() {
 		sliderVideoTime.valueProperty().addListener((obs, oldV, newV) -> showFrameAt(newV.intValue()));
+		GraphicsContext gc = canvas.getGraphicsContext2D();
 		canvas.setOnMouseClicked((event) -> {
 			TimePoint tp = new TimePoint(event.getX(), event.getY(), (int) project.getVideo().getCurrentFrameNum());
 			try {
 				project.getTracks().get(chosenChickIndex).add(tp);
-				GraphicsContext gc = canvas.getGraphicsContext2D();
 				gc.setFill(Color.RED);
 				gc.fillOval(event.getX() - 5, event.getY() - 5, 10, 10);
+				sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
+				gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+				redrawPoint();
 			} catch (Exception e) {
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setTitle("Error");
@@ -118,6 +121,18 @@ public class MainWindowController implements AutoTrackListener {
 			}
 		});
 
+	}
+	
+	public void redrawPoint() {
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		Video vid = project.getVideo();
+		if (chosenChickIndex >= 0) {
+			TimePoint tp = project.getTracks().get(chosenChickIndex).getTimePointAtTime(vid.getCurrentFrameNum());
+			if (tp != null) {
+				gc.setFill(Color.RED);
+				gc.fillOval(tp.getX() - 5, tp.getY() - 5, 10, 10);
+			}
+		}
 	}
 
 	public void initializeWithStage(Stage stage) {
@@ -145,6 +160,7 @@ public class MainWindowController implements AutoTrackListener {
 			showFrameAt(0);
 			project.getVideo().setXPixelsPerCm(6.5); // these are just rough estimates!
 			project.getVideo().setYPixelsPerCm(6.7);
+			chosenChickIndex = -1;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -190,10 +206,6 @@ public class MainWindowController implements AutoTrackListener {
 	// public void createVideo(String filePath) throws FileNotFoundException {
 	// video = new Video(filePath);
 	// }
-
-	public void createProject(String filePath) throws FileNotFoundException {
-		project = new ProjectData(filePath);
-	}
 
 	@FXML
 	public void chooseChick() throws IOException {
@@ -257,11 +269,17 @@ public class MainWindowController implements AutoTrackListener {
 		}
 		
 		@FXML public void forwardOneSec() {
+			GraphicsContext gc = canvas.getGraphicsContext2D();
+			gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
+			redrawPoint();
 		}
 		
 		@FXML public void previousOneSec() {
-			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate());
+			GraphicsContext gc = canvas.getGraphicsContext2D();
+			gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate() - 1);
+			redrawPoint();
 		}
 		
 //		@FXML public void displayCurrentFrame() {
