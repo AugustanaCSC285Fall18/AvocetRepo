@@ -59,9 +59,10 @@ public class MainWindowController implements AutoTrackListener {
 	@FXML
 	private Slider sliderVideoTime;
 
-
-	@FXML private Label labelCurFrameNum;
-	@FXML private Button pausePlay;
+	@FXML
+	private Label labelCurFrameNum;
+	@FXML
+	private Button pausePlay;
 
 	@FXML
 	private TextField textfieldStartFrame;
@@ -116,13 +117,13 @@ public class MainWindowController implements AutoTrackListener {
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setTitle("Error");
 				alert.setHeaderText("No chick being tracked!");
-				alert.setContentText("Select a chick to track on the top left corner");
+				alert.setContentText("Select a chick to track on the top right corner");
 				alert.showAndWait();
 			}
 		});
 
 	}
-	
+
 	public void redrawPoint() {
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		Video vid = project.getVideo();
@@ -175,12 +176,9 @@ public class MainWindowController implements AutoTrackListener {
 
 			String currentFrame = "" + frameNum;
 			labelCurFrameNum.setText(currentFrame);
-		}		
-
-
 		}
 
-	
+	}
 
 	@FXML
 	public void handleStartAutotracking() throws InterruptedException {
@@ -209,24 +207,38 @@ public class MainWindowController implements AutoTrackListener {
 
 	@FXML
 	public void chooseChick() throws IOException {
-		String choice = chickSelect.getValue();
-		for (int i = 0; i < project.getTracks().size(); i++) {
-			if (choice.equals(project.getTracks().get(i).getID())) {
-				chosenChickIndex = i;
+		try {
+			String choice = chickSelect.getValue();
+			for (int i = 0; i < project.getTracks().size(); i++) {
+				if (choice.equals(project.getTracks().get(i).getID())) {
+					chosenChickIndex = i;
+				}
 			}
+			tracking.setText("Tracking: " + project.getTracks().get(chosenChickIndex).getID());
+			GraphicsContext gc = canvas.getGraphicsContext2D();
+			gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		} catch (Exception e) {
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Error");
+			alert.setHeaderText("Enter a chick name!");
+			alert.setContentText("Put a chick name in the field provided");
+			alert.showAndWait();
 		}
-		tracking.setText("Tracking: " + project.getTracks().get(chosenChickIndex).getID());
-		GraphicsContext gc = canvas.getGraphicsContext2D();
-		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 	}
 
 	@FXML
 	public void createChick() {
 		String name = chickName.getText();
 		chickName.setText("");
-		chickIDs.add(name);
-		chickSelect.setItems(chickIDs);
-		project.getTracks().add(new AnimalTrack(name));
+		while (name.length() > 1 && name.charAt(0) == ' ') {
+			name = name.substring(1);
+		}
+		if (name != "" && name != " ") {
+			chickIDs.add(name);
+			chickSelect.setItems(chickIDs);
+			project.getTracks().add(new AnimalTrack(name));
+			FXCollections.sort(chickIDs);
+		}
 	}
 
 	// this method will get called repeatedly by the Autotracker after it analyzes
@@ -258,35 +270,34 @@ public class MainWindowController implements AutoTrackListener {
 		});
 
 	}
-	
-	
-	
-		
-		@FXML public void exportData() throws IOException {
-			project.exportProject();
-			Stage close = (Stage) export.getScene().getWindow();
-			close.close();
-		}
-		
-		@FXML public void forwardOneSec() {
-			GraphicsContext gc = canvas.getGraphicsContext2D();
-			gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
-			redrawPoint();
-		}
-		
-		@FXML public void previousOneSec() {
-			GraphicsContext gc = canvas.getGraphicsContext2D();
-			gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate() - 1);
-			redrawPoint();
-		}
-		
+
+	@FXML
+	public void exportData() throws IOException {
+		project.exportProject();
+		Stage close = (Stage) export.getScene().getWindow();
+		close.close();
+	}
+
+	@FXML
+	public void forwardOneSec() {
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
+		redrawPoint();
+	}
+
+	@FXML
+	public void previousOneSec() {
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate() - 1);
+		redrawPoint();
+	}
+
 //		@FXML public void displayCurrentFrame() {
 //			textFieldCurFrameNum.setEditable(false);
 //			String currentFrame = "" + project.getVideo().getCurrentFrameNum();
 //			textFieldCurFrameNum.setText(currentFrame);
 //		}
 
-	}
-
+}
