@@ -113,7 +113,7 @@ public class MainWindowController implements AutoTrackListener {
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setTitle("Error");
 				alert.setHeaderText("No chick being tracked!");
-				alert.setContentText("Select a chick to track on the top left corner");
+				alert.setContentText("Select a chick to track on the top right corner");
 				alert.showAndWait();
 			}
 		});
@@ -261,7 +261,7 @@ public class MainWindowController implements AutoTrackListener {
 		}
 		
 		@FXML public void previousOneSec() {
-			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate());
+			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate()-1);
 		}
 		
 //		@FXML public void displayCurrentFrame() {
