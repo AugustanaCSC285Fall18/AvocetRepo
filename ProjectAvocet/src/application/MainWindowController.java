@@ -271,6 +271,7 @@ public class MainWindowController implements AutoTrackListener {
 
 	}
 
+
 	@FXML
 	public void exportData() throws IOException {
 		project.exportProject();
@@ -293,7 +294,10 @@ public class MainWindowController implements AutoTrackListener {
 		sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate() - 1);
 		redrawPoint();
 	}
+	
 
+
+	
 //		@FXML public void displayCurrentFrame() {
 //			textFieldCurFrameNum.setEditable(false);
 //			String currentFrame = "" + project.getVideo().getCurrentFrameNum();
