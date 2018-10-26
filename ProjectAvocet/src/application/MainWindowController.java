@@ -227,18 +227,23 @@ public class MainWindowController implements AutoTrackListener {
 	}
 
 	@FXML
-	public void createChick() {
+	public void createChick() throws IOException{
 		String name = chickName.getText();
 		chickName.setText("");
-		while (name.length() > 1 && name.charAt(0) == ' ') {
-			name = name.substring(1);
-		}
-		if (name != "" && name != " ") {
+		System.out.println(name.equals(""));
+		if (name.equals("")) {
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Error");
+			alert.setHeaderText("Enter a chick name!");
+			alert.setContentText("Please enter a valid chick name to the field provided.");
+			alert.showAndWait();
+		} else {
 			chickIDs.add(name);
 			chickSelect.setItems(chickIDs);
 			project.getTracks().add(new AnimalTrack(name));
 			FXCollections.sort(chickIDs);
 		}
+		
 	}
 
 	// this method will get called repeatedly by the Autotracker after it analyzes
@@ -298,6 +303,7 @@ public class MainWindowController implements AutoTrackListener {
 
 
 	
+
 //		@FXML public void displayCurrentFrame() {
 //			textFieldCurFrameNum.setEditable(false);
 //			String currentFrame = "" + project.getVideo().getCurrentFrameNum();
