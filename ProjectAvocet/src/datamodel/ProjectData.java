@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import csv.CSVUtils;
-import javafx.stage.Stage;
 
 public class ProjectData {
 	private Video video;
@@ -34,6 +33,24 @@ public class ProjectData {
 	
 	public void addTrack(AnimalTrack track) {
 		tracks.add(track);
+	}
+	
+	public List<AnimalTrack> getUnassignedSegmentsInRange(double x, double y, 
+            int startFrame, int endFrame, double distanceRange) {
+		// FIXME: find and return the correct list of segments (see Javadoc comment above)
+		List<AnimalTrack> inRange = new ArrayList<AnimalTrack>();
+		for (int i = 0; i < unassignedSegments.size(); i++) {
+			List<TimePoint> testList = unassignedSegments.get(i).getTimePointsWithinInterval(startFrame, endFrame);
+			if (!testList.isEmpty()) {
+				for (int j = 0; j < testList.size(); j++) {
+					if (testList.get(j).getDistanceTo(x, y) < distanceRange) {
+						inRange.add(unassignedSegments.get(i));
+						break;
+					}
+				}
+			}
+		}
+		return inRange;
 	}
 	
 	public void exportProject() {

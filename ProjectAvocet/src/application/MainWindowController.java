@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import java.io.IOException;
@@ -98,20 +99,24 @@ public class MainWindowController implements AutoTrackListener {
 	private Stage stage;
 	private ObservableList<String> chickIDs = FXCollections.observableArrayList();
 	private int chosenChickIndex;
+	double aspectWidthRatio;
+	double aspectHeightRatio;
 
 	@FXML
 	public void initialize() {
 		sliderVideoTime.valueProperty().addListener((obs, oldV, newV) -> showFrameAt(newV.intValue()));
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		canvas.setOnMouseClicked((event) -> {
-			TimePoint tp = new TimePoint(event.getX(), event.getY(), (int) project.getVideo().getCurrentFrameNum());
+			TimePoint tp = new TimePoint(event.getX()*aspectWidthRatio, event.getY()*aspectHeightRatio, (int) project.getVideo().getCurrentFrameNum());
 			try {
 				project.getTracks().get(chosenChickIndex).add(tp);
 				gc.setFill(Color.RED);
 				gc.fillOval(event.getX() - 5, event.getY() - 5, 10, 10);
 				sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
 				gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-				redrawPoint();
+				System.out.println(tp);
+				redrawPoints();
+				findNearbyPoints(tp, gc);
 			} catch (Exception e) {
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setTitle("Error");
@@ -123,15 +128,28 @@ public class MainWindowController implements AutoTrackListener {
 
 	}
 	
-	public void redrawPoint() {
+	public void redrawPoints() {
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		Video vid = project.getVideo();
 		if (chosenChickIndex >= 0) {
-			TimePoint tp = project.getTracks().get(chosenChickIndex).getTimePointAtTime(vid.getCurrentFrameNum());
-			if (tp != null) {
-				gc.setFill(Color.RED);
-				gc.fillOval(tp.getX() - 5, tp.getY() - 5, 10, 10);
+			List<TimePoint> draw = project.getTracks().get(chosenChickIndex).getTimePointsInRange(vid.getCurrentFrameNum() - 90, vid.getCurrentFrameNum());
+			for (int i = 0; i < draw.size(); i++) {
+				TimePoint tp = draw.get(i);
+				if (tp != null) {
+					gc.setFill(Color.RED);
+					gc.fillOval(tp.getX()/aspectWidthRatio - 5, tp.getY()/aspectHeightRatio - 5, 10, 10);
+				}
+
 			}
+		}
+	}
+	
+	public void findNearbyPoints(TimePoint tp, GraphicsContext gc) {
+		List<AnimalTrack> autoNear = project.getUnassignedSegmentsInRange(tp.getX(), tp.getY(), tp.getFrameNum() - 20, tp.getFrameNum() + 20, 30);
+		gc.setLineWidth(2);
+		gc.setStroke(Color.LIGHTGRAY);
+		for (int i = 0; i < autoNear.size(); i++) {
+			
 		}
 	}
 
@@ -161,6 +179,10 @@ public class MainWindowController implements AutoTrackListener {
 			project.getVideo().setXPixelsPerCm(6.5); // these are just rough estimates!
 			project.getVideo().setYPixelsPerCm(6.7);
 			chosenChickIndex = -1;
+			aspectWidthRatio = (double)project.getVideo().getFrameWidth()/ (double)myImageView.boundsInParentProperty().get().getWidth();
+			aspectHeightRatio = (double)project.getVideo().getFrameHeight()/ (double)myImageView.boundsInParentProperty().get().getHeight();
+			canvas.setWidth(myImageView.boundsInParentProperty().get().getWidth());
+			canvas.setHeight(myImageView.boundsInParentProperty().get().getHeight());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -176,9 +198,7 @@ public class MainWindowController implements AutoTrackListener {
 			String currentFrame = "" + frameNum;
 			labelCurFrameNum.setText(currentFrame);
 		}		
-
-
-		}
+	}
 
 	
 
@@ -250,7 +270,9 @@ public class MainWindowController implements AutoTrackListener {
 
 		for (AnimalTrack track : trackedSegments) {
 			System.out.println(track);
-
+			for (int i = 0; i < track.getPositions().size(); i++) {
+				System.out.println(track.getPositions().get(i));
+			}
 		}
 		Platform.runLater(() -> {
 			progressAutoTrack.setProgress(1.0);
@@ -272,14 +294,14 @@ public class MainWindowController implements AutoTrackListener {
 			GraphicsContext gc = canvas.getGraphicsContext2D();
 			gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
-			redrawPoint();
+			redrawPoints();
 		}
 		
 		@FXML public void previousOneSec() {
 			GraphicsContext gc = canvas.getGraphicsContext2D();
 			gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate() - 1);
-			redrawPoint();
+			redrawPoints();
 		}
 		
 //		@FXML public void displayCurrentFrame() {

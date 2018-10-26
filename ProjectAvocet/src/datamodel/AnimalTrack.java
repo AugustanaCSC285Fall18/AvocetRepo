@@ -29,6 +29,14 @@ public class AnimalTrack {
 		return positions.get(index);
 	}
 	
+	public List<TimePoint> getTimePointsInRange(int startFrame, int endFrame) {
+		List<TimePoint> timepoints = new ArrayList<TimePoint>();
+		for (int i = startFrame; i <= endFrame; i++) {
+			timepoints.add(this.getTimePointAtTime(i));
+		}
+		return timepoints;
+	}
+	
 	public List<TimePoint> getPositions() {
 		return positions;
 	}
@@ -48,6 +56,16 @@ public class AnimalTrack {
 			}
 		}
 		return null;
+	}
+	
+	public List<TimePoint> getTimePointsWithinInterval(int startFrameNum, int endFrameNum) {
+		List<TimePoint> pointsInInterval = new ArrayList<>();
+		for (TimePoint pt : positions) {
+			if (pt.getFrameNum() >= startFrameNum && pt.getFrameNum() <= endFrameNum) {
+				pointsInInterval.add(pt);
+			}
+		}
+		return pointsInInterval;
 	}
 	
 	public TimePoint getFinalTimePoint() {

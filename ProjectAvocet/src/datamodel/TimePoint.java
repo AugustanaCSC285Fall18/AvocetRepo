@@ -49,6 +49,12 @@ public class TimePoint implements Comparable<TimePoint> {
 		double dy = other.y-y;
 		return Math.sqrt(dx*dx+dy*dy);
 	}
+	
+	public double getDistanceTo(double x2, double y2) {
+		double dx = x2 - x;
+		double dy = y2 - y;
+		return Math.sqrt(dx * dx + dy * dy);
+	}
 
 	/**
 	 * How many frames have passed since another TimePoint
