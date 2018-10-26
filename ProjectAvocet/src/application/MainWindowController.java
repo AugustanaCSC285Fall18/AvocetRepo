@@ -60,9 +60,10 @@ public class MainWindowController implements AutoTrackListener {
 	@FXML
 	private Slider sliderVideoTime;
 
-
-	@FXML private Label labelCurFrameNum;
-	@FXML private Button pausePlay;
+	@FXML
+	private Label labelCurFrameNum;
+	@FXML
+	private Button pausePlay;
 
 	@FXML
 	private TextField textfieldStartFrame;
@@ -121,7 +122,7 @@ public class MainWindowController implements AutoTrackListener {
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setTitle("Error");
 				alert.setHeaderText("No chick being tracked!");
-				alert.setContentText("Select a chick to track on the top left corner");
+				alert.setContentText("Select a chick to track on the top right corner");
 				alert.showAndWait();
 			}
 		});
@@ -163,12 +164,13 @@ public class MainWindowController implements AutoTrackListener {
 
 	@FXML
 	public void handleBrowse() {
+		
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open Video File");
 		File chosenFile = fileChooser.showOpenDialog(stage);
 		if (chosenFile != null) {
 			loadVideo(chosenFile.getPath());
-		}
+		} 
 	}
 
 	public void loadVideo(String filePath) {
@@ -200,8 +202,6 @@ public class MainWindowController implements AutoTrackListener {
 		}		
 	}
 
-	
-
 	@FXML
 	public void handleStartAutotracking() throws InterruptedException {
 		if (autotracker == null || !autotracker.isRunning()) {
@@ -229,24 +229,42 @@ public class MainWindowController implements AutoTrackListener {
 
 	@FXML
 	public void chooseChick() throws IOException {
-		String choice = chickSelect.getValue();
-		for (int i = 0; i < project.getTracks().size(); i++) {
-			if (choice.equals(project.getTracks().get(i).getID())) {
-				chosenChickIndex = i;
+		try {
+			String choice = chickSelect.getValue();
+			for (int i = 0; i < project.getTracks().size(); i++) {
+				if (choice.equals(project.getTracks().get(i).getID())) {
+					chosenChickIndex = i;
+				}
 			}
+			tracking.setText("Tracking: " + project.getTracks().get(chosenChickIndex).getID());
+			GraphicsContext gc = canvas.getGraphicsContext2D();
+			gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		} catch (Exception e) {
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Error");
+			alert.setHeaderText("Enter a chick name!");
+			alert.setContentText("Put a chick name in the field provided");
+			alert.showAndWait();
 		}
-		tracking.setText("Tracking: " + project.getTracks().get(chosenChickIndex).getID());
-		GraphicsContext gc = canvas.getGraphicsContext2D();
-		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 	}
 
 	@FXML
-	public void createChick() {
+	public void createChick() throws IOException{
 		String name = chickName.getText();
 		chickName.setText("");
-		chickIDs.add(name);
-		chickSelect.setItems(chickIDs);
-		project.getTracks().add(new AnimalTrack(name));
+		if (name.equals("")) {
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Error");
+			alert.setHeaderText("Enter a chick name!");
+			alert.setContentText("Please enter a valid chick name to the field provided.");
+			alert.showAndWait();
+		} else {
+			chickIDs.add(name);
+			chickSelect.setItems(chickIDs);
+			project.getTracks().add(new AnimalTrack(name));
+			FXCollections.sort(chickIDs);
+		}
+		
 	}
 
 	// this method will get called repeatedly by the Autotracker after it analyzes
@@ -281,8 +299,6 @@ public class MainWindowController implements AutoTrackListener {
 
 	}
 	
-	
-	
 		
 		@FXML public void exportData() throws IOException {
 			project.exportProject();
@@ -303,12 +319,10 @@ public class MainWindowController implements AutoTrackListener {
 			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate() - 1);
 			redrawPoints();
 		}
-		
 //		@FXML public void displayCurrentFrame() {
 //			textFieldCurFrameNum.setEditable(false);
 //			String currentFrame = "" + project.getVideo().getCurrentFrameNum();
 //			textFieldCurFrameNum.setText(currentFrame);
 //		}
 
-	}
-
+}
