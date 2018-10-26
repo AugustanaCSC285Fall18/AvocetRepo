@@ -230,7 +230,6 @@ public class MainWindowController implements AutoTrackListener {
 	public void createChick() throws IOException{
 		String name = chickName.getText();
 		chickName.setText("");
-		System.out.println(name.equals(""));
 		if (name.equals("")) {
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Error");
