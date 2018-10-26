@@ -146,12 +146,13 @@ public class MainWindowController implements AutoTrackListener {
 
 	@FXML
 	public void handleBrowse() {
+		
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open Video File");
 		File chosenFile = fileChooser.showOpenDialog(stage);
 		if (chosenFile != null) {
 			loadVideo(chosenFile.getPath());
-		}
+		} 
 	}
 
 	public void loadVideo(String filePath) {
