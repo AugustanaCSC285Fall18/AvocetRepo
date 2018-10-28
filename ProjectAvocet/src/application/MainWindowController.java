@@ -8,7 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-
+import java.util.Collections;
 import java.io.IOException;
 
 import java.util.List;
@@ -20,6 +20,7 @@ import datamodel.AnimalTrack;
 import datamodel.ProjectData;
 import datamodel.TimePoint;
 import datamodel.Video;
+import datamodel.sortTimePoint;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -100,6 +101,7 @@ public class MainWindowController implements AutoTrackListener {
 	private Stage stage;
 	private ObservableList<String> chickIDs = FXCollections.observableArrayList();
 	private int chosenChickIndex;
+	private List<AnimalTrack> inRange = new ArrayList<AnimalTrack>();
 	double aspectWidthRatio;
 	double aspectHeightRatio;
 
@@ -110,14 +112,22 @@ public class MainWindowController implements AutoTrackListener {
 		canvas.setOnMouseClicked((event) -> {
 			TimePoint tp = new TimePoint(event.getX()*aspectWidthRatio, event.getY()*aspectHeightRatio, (int) project.getVideo().getCurrentFrameNum());
 			try {
-				project.getTracks().get(chosenChickIndex).add(tp);
-				gc.setFill(Color.RED);
-				gc.fillOval(event.getX() - 5, event.getY() - 5, 10, 10);
-				sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
-				gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-				System.out.println(tp);
-				redrawPoints();
-				findNearbyPoints(tp, gc);
+				TimePoint click = new TimePoint(event.getX(), event.getY(), project.getVideo().getCurrentFrameNum());
+				boolean segmentAdded = addSegment(click);
+				if (!segmentAdded) {
+					project.getTracks().get(chosenChickIndex).add(tp);
+					gc.setFill(Color.RED);
+					gc.fillOval(event.getX() - 5, event.getY() - 5, 10, 10);
+					sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
+					gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+					redrawPoints();
+					findNearbyTracks(tp, gc);
+				}
+				else {
+					gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+					redrawPoints();
+					findNearbyTracks(tp, gc);
+				}
 			} catch (Exception e) {
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setTitle("Error");
@@ -145,13 +155,34 @@ public class MainWindowController implements AutoTrackListener {
 		}
 	}
 	
-	public void findNearbyPoints(TimePoint tp, GraphicsContext gc) {
+	public void findNearbyTracks(TimePoint tp, GraphicsContext gc) {
 		List<AnimalTrack> autoNear = project.getUnassignedSegmentsInRange(tp.getX(), tp.getY(), tp.getFrameNum() - 20, tp.getFrameNum() + 20, 30);
-		gc.setLineWidth(2);
-		gc.setStroke(Color.LIGHTGRAY);
 		for (int i = 0; i < autoNear.size(); i++) {
+				TimePoint draw = autoNear.get(i).getPositions().get(0);
+				gc.setFill(Color.BLUE);
+				gc.fillRect(draw.getX()/aspectWidthRatio-5, draw.getY()/aspectHeightRatio-5, 10, 10);
+				for (int j = 0; j < project.getUnassignedSegments().size(); j++) {
+					if (project.getUnassignedSegments().get(j).getID().equals(autoNear.get(i).getID())) {
+						project.getUnassignedSegments().remove(j);
+						break;
+					}
+				}
 			
 		}
+		inRange = autoNear;
+	}
+	
+	public boolean addSegment(TimePoint click) {
+		for (int i = 0; i < inRange.size(); i++) {
+			TimePoint test = inRange.get(i).getPositions().get(0);
+			if (click.getDistanceTo(test.getX()/aspectWidthRatio, test.getY()/aspectHeightRatio) < 5) {
+				project.getTracks().get(chosenChickIndex).getPositions().addAll(inRange.get(i).getPositions());
+				Collections.sort(project.getTracks().get(chosenChickIndex).getPositions(), new sortTimePoint());
+				sliderVideoTime.setValue(inRange.get(i).getPositions().get(inRange.get(i).getPositions().size()-1).getFrameNum()+30);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void initializeWithStage(Stage stage) {
@@ -288,9 +319,6 @@ public class MainWindowController implements AutoTrackListener {
 
 		for (AnimalTrack track : trackedSegments) {
 			System.out.println(track);
-			for (int i = 0; i < track.getPositions().size(); i++) {
-				System.out.println(track.getPositions().get(i));
-			}
 		}
 		Platform.runLater(() -> {
 			progressAutoTrack.setProgress(1.0);
@@ -301,8 +329,15 @@ public class MainWindowController implements AutoTrackListener {
 	
 		
 		@FXML public void exportData() throws IOException {
-			project.exportProject();
+			FileChooser save = new FileChooser();
+			FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
+            save.getExtensionFilters().add(extFilter);
 			Stage close = (Stage) export.getScene().getWindow();
+			save.setTitle("Save CSV");
+			File file = save.showSaveDialog(close);
+			if(file != null){
+                project.exportProject(file);
+            }
 			close.close();
 		}
 		

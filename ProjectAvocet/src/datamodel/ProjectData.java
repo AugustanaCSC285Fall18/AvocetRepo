@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import csv.CSVUtils;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class ProjectData {
@@ -60,10 +61,9 @@ public class ProjectData {
 		tracks.add(track);
 	}
 	
-	public void exportProject() {
-		String csvFile = "chicks.csv";
+	public FileWriter exportProject(File file) {
 		try {
-			FileWriter writer = new FileWriter(csvFile);
+			FileWriter writer = new FileWriter(file);
 			CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "X-Coordinate", "Y-Coordinate", "Frame Number"), ',');
 			for (int i = 0; i < tracks.size(); i++) {
 				for (int j = 0; j < tracks.get(i).getPositions().size(); j++) {
@@ -77,8 +77,9 @@ public class ProjectData {
 			}
 			writer.flush();
 			writer.close();
+			return writer;
 		} catch (Exception e) {
-			e.printStackTrace();
+			return null;
 		}
 	}
 	
