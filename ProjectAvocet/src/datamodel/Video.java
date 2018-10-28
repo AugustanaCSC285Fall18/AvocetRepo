@@ -10,7 +10,7 @@ import org.opencv.videoio.Videoio;
 public class Video {
 	
 	private String filePath;
-	private VideoCapture vidCap;
+	private transient VideoCapture vidCap;
 	private int emptyFrameNum;
 	private int startFrameNum;
 	private int endFrameNum;
@@ -36,14 +36,14 @@ public class Video {
 		this.arenaBounds = new Rectangle(0,0,frameWidth,frameHeight);
 	}
 	
-	public void setCurrentFrameNum(int seekFrame) {
+	public synchronized void setCurrentFrameNum(int seekFrame) {
 		vidCap.set(Videoio.CV_CAP_PROP_POS_FRAMES, (double) seekFrame);
 	}
-	public int getCurrentFrameNum() {
+	public synchronized int getCurrentFrameNum() {
 		return (int) vidCap.get(Videoio.CV_CAP_PROP_POS_FRAMES);
 	}
 	
-	public Mat readFrame() {
+	public synchronized Mat readFrame() {
 		Mat frame = new Mat();
 		vidCap.read(frame);
 		return frame;
@@ -55,10 +55,10 @@ public class Video {
 	/** 
 	 * @return frames per second
 	 */
-	public double getFrameRate() {
+	public synchronized double getFrameRate() {
 		return vidCap.get(Videoio.CAP_PROP_FPS);
 	}
-	public int getTotalNumFrames() {
+	public synchronized int getTotalNumFrames() {
 		return (int) vidCap.get(Videoio.CAP_PROP_FRAME_COUNT);
 	}
 
@@ -128,6 +128,13 @@ public class Video {
 
 	public synchronized int getFrameHeight() {
 		return (int) vidCap.get(Videoio.CAP_PROP_FRAME_HEIGHT);
+	}
+	
+	synchronized void connectVideoCapture() throws FileNotFoundException {
+		this.vidCap = new VideoCapture(filePath);
+		if (!vidCap.isOpened()) {
+			throw new FileNotFoundException("Unable to open video file: " + filePath);
+		}
 	}
 
 }

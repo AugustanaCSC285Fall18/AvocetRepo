@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="546.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainWindowController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="546.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MainWindowController">
    <children>
 
       
@@ -47,6 +47,10 @@
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
+      <Button layoutX="707.0" layoutY="230.0" mnemonicParsing="false" onAction="#setArenaBounds" text="Set Arena Bounds" />
+      <Button layoutX="670.0" layoutY="267.0" mnemonicParsing="false" onAction="#setPixelToCentimeterHeight" text="Set Pixel to Centimeters: Height" />
+      <Button layoutX="671.0" layoutY="307.0" mnemonicParsing="false" onAction="#setPixelToCentimeterWidth" text="Set Pixel to Centimeters: Width" />
+      <Button layoutX="803.0" layoutY="425.0" mnemonicParsing="false" onAction="#saveJSON" prefHeight="25.0" prefWidth="67.0" text="Save" />
 
 
   </children> 

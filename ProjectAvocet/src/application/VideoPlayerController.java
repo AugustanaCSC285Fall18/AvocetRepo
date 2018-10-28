@@ -21,6 +21,7 @@ public class VideoPlayerController {
 	@FXML private Button btnBrowse;
 	@FXML private Button btnStart;
 	File chosenFile;
+	private MainWindowController nextController;
 	
 	@FXML public void initialize() {
 		
@@ -37,24 +38,31 @@ public class VideoPlayerController {
 		}
 	}
 	
-	@FXML public void openVideo() throws IOException {
+	@FXML
+	public void start() throws IOException {
+		String filePath = chosenFile.getAbsolutePath();
+		String extension = filePath.substring(filePath.length() - 3);
 		try {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
-		AnchorPane root = (AnchorPane)loader.load();
-		MainWindowController nextController = loader.getController();
-		
-		Scene nextScene = new Scene(root,root.getPrefWidth(),root.getPrefHeight());
-		nextScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-		
-		Stage primary = (Stage) btnStart.getScene().getWindow();
-		nextController.initializeWithStage(primary);
-		nextController.loadVideo(chosenFile.getAbsolutePath());
-		primary.setScene(nextScene);
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
+			AnchorPane root = (AnchorPane) loader.load();
+			nextController = loader.getController();
+			Scene nextScene = new Scene(root, root.getPrefWidth(), root.getPrefHeight());
+			nextScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+
+			Stage primary = (Stage) btnStart.getScene().getWindow();
+			nextController.initializeWithStage(primary);
+			if (extension.equals("txt")) {
+				nextController.loadProject(chosenFile);
+				nextController.loadVideo(chosenFile.getAbsolutePath(), false);
+			} else {
+				nextController.loadVideo(chosenFile.getAbsolutePath(), true);
+			}
+			primary.setScene(nextScene);
 		} catch (Exception e) {
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Error");
 			alert.setHeaderText("Invalid File Choosen");
-			alert.setContentText("Please choose a valid video file");
+			alert.setContentText("Please choose a valid file");
 			alert.showAndWait();
 		}
 	}
