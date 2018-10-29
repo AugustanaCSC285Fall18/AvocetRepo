@@ -40,9 +40,11 @@ public class VideoPlayerController {
 	
 	@FXML
 	public void start() throws IOException {
-		String filePath = chosenFile.getAbsolutePath();
-		String extension = filePath.substring(filePath.length() - 3);
+
 		try {
+			String filePath = chosenFile.getAbsolutePath();
+			String extension = filePath.substring(filePath.length() - 3);
+			
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
 			AnchorPane root = (AnchorPane) loader.load();
 			nextController = loader.getController();
@@ -62,7 +64,7 @@ public class VideoPlayerController {
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Error");
 			alert.setHeaderText("Invalid File Choosen");
-			alert.setContentText("Please choose a valid file");
+			alert.setContentText("Please choose a valid video file");
 			alert.showAndWait();
 		}
 	}

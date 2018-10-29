@@ -129,7 +129,9 @@ public class AutoTracker {
 		}
 		return bestMatch;		
 	}
-	
+	/**
+	 * Kills autotracking if the Cancel button is pressed.
+	 */
 	public void cancelAnalysis() {
 		if (task != null) {
 			task.cancel(true);
@@ -139,7 +141,10 @@ public class AutoTracker {
 			} catch (InterruptedException ex) { }
 		}		
 	}
-	
+	/**
+	 * 
+	 * @return whether or not the autotracker is runnning
+	 */
 	public boolean isRunning() {
 		return task != null && task.isRunning();
 	}

@@ -117,6 +117,9 @@ public class MainWindowController implements AutoTrackListener {
 	private ScheduledExecutorService timer;
 
 	@FXML
+	/**
+	 * Initializes the entire project
+	 */
 	public void initialize() {
 		sliderVideoTime.valueProperty().addListener((obs, oldV, newV) -> showFrameAt(newV.intValue()));
 		GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -157,7 +160,9 @@ public class MainWindowController implements AutoTrackListener {
 		});
 
 	}
-
+	/**
+	 * Draws the points for the manual tracking
+	 */
 	public void redrawPoints() {
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		Video vid = video;
@@ -175,6 +180,14 @@ public class MainWindowController implements AutoTrackListener {
 		}
 	}
 
+	
+	/**
+	 * 
+	 * @param tp gets the timepoint information
+	 * @param gc gets the GraphicsContext information
+	 * 
+	 * Finds the unassigned segments and adds it to the chick that they are currently tracking
+	 */
 	public void findNearbyTracks(TimePoint tp, GraphicsContext gc) {
 		List<AnimalTrack> autoNear = project.getUnassignedSegmentsInRange(tp.getX(), tp.getY(), tp.getFrameNum() - 20,
 				tp.getFrameNum() + 20, 30);
@@ -192,7 +205,16 @@ public class MainWindowController implements AutoTrackListener {
 		}
 		inRange = autoNear;
 	}
-
+/**
+ * 
+ * @param click is where the user clicked
+ * @return true if the a segment is added to a chick, false if no segments are added
+ * 
+ * It takes the time point is the coordinates of where the user clicked and if the click is within the first timepoint of
+ * one of the unassigned segments, the segment is added to the chick that is currently being tracked.
+ * 
+ * 
+ */
 	public boolean addSegment(TimePoint click) {
 		for (int i = 0; i < inRange.size(); i++) {
 			TimePoint test = inRange.get(i).getPositions().get(0);
@@ -207,6 +229,11 @@ public class MainWindowController implements AutoTrackListener {
 		return false;
 	}
 
+	/**
+	 * 
+	 * @param stage 
+	 * Initializes with the stage
+	 */
 	public void initializeWithStage(Stage stage) {
 		this.stage = stage;
 
@@ -214,7 +241,13 @@ public class MainWindowController implements AutoTrackListener {
 		// (not perfect though... visual problems if the height gets too large.)
 		myImageView.fitWidthProperty().bind(myImageView.getScene().widthProperty());
 	}
-
+/**
+ * 
+ * @param filePath takes the filepath inputed from user
+ * @param createProject creates a project with that video
+ * 
+ * Loads the video that the user wishes to use
+ */
 	public void loadVideo(String filePath, boolean createProject) {
 		try {
 			if (createProject) {
@@ -238,7 +271,12 @@ public class MainWindowController implements AutoTrackListener {
 		}
 
 	}
-
+/**
+ * 
+ * @param frameNum 
+ * 
+ * Sets and shows the current frame number
+ */
 	public void showFrameAt(int frameNum) {
 		if (autotracker == null || !autotracker.isRunning()) {
 			video.setCurrentFrameNum(frameNum);
@@ -250,6 +288,12 @@ public class MainWindowController implements AutoTrackListener {
 		}
 	}
 
+	/**
+	 * 
+	 * @throws InterruptedException
+	 * 
+	 * Starts the autotracker when the button is pressed by the user
+	 */
 	@FXML
 	public void handleStartAutotracking() throws InterruptedException {
 		if (autotracker == null || !autotracker.isRunning()) {
@@ -270,10 +314,13 @@ public class MainWindowController implements AutoTrackListener {
 
 	}
 
-	// public void createVideo(String filePath) throws FileNotFoundException {
-	// video = new Video(filePath);
-	// }
 
+/**
+ * 
+ * @throws IOException
+ * 
+ * Allows the user to choose the chick they would like to track from the list.
+ */
 	@FXML
 	public void chooseChick() throws IOException {
 		try {
@@ -295,6 +342,12 @@ public class MainWindowController implements AutoTrackListener {
 		}
 	}
 
+	/**
+	 * 
+	 * @throws IOException
+	 * 
+	 *Allows the users to enter the name of the chicks ad adds them to the list of chicks.
+	 */
 	@FXML
 	public void createChick() throws IOException {
 		String name = chickName.getText();
@@ -327,7 +380,9 @@ public class MainWindowController implements AutoTrackListener {
 			sliderVideoTime.setValue(frameNumber);
 		});
 	}
-
+/**
+ * Determines when the autotracking is complete
+ */
 	@Override
 	public void trackingComplete(List<AnimalTrack> trackedSegments) {
 		project.getUnassignedSegments().clear();
@@ -342,7 +397,12 @@ public class MainWindowController implements AutoTrackListener {
 		});
 
 	}
-
+/**
+ * 
+ * @throws IOException
+ * Exports the data collected by the user to a csv file
+ */
+	
 	@FXML
 	public void exportData() throws IOException {
 		FileChooser save = new FileChooser();
@@ -356,7 +416,9 @@ public class MainWindowController implements AutoTrackListener {
 		}
 		close.close();
 	}
-
+ /**
+  * Moves the video along one second when the user presses the "Forward" button
+  */
 	@FXML
 	public void forwardOneSec() {
 		GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -365,6 +427,9 @@ public class MainWindowController implements AutoTrackListener {
 		redrawPoints();
 	}
 
+	/**
+	 * Moves the video back one second when the user presses the "Previous" Button
+	 */
 	@FXML
 	public void previousOneSec() {
 		GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -372,7 +437,10 @@ public class MainWindowController implements AutoTrackListener {
 		sliderVideoTime.setValue(video.getCurrentFrameNum() - video.getFrameRate() - 1);
 		redrawPoints();
 	}
-
+ /**
+  * Sets the bounds of the Arena the chicks are in by collecting the information the user will input about the arena in the video.
+  * 
+  */
 	@FXML
 	public void setArenaBounds() {
 		Alert alert = new Alert(AlertType.INFORMATION);
@@ -403,7 +471,10 @@ public class MainWindowController implements AutoTrackListener {
 		});
 
 	}
-
+ /**
+  * Allows the user to input a known distance  within the video to be able to convert that distance from pixels for the 
+  * vertical height of the arena
+  */
 	@FXML
 	public void setPixelToCentimeterHeight() {
 		Alert alert = new Alert(AlertType.INFORMATION);
@@ -435,7 +506,10 @@ public class MainWindowController implements AutoTrackListener {
 
 		});
 	}
-
+/**
+ *  Allows the user to input a known distance  within the video to be able to convert that distance from pixels for the 
+ * vertical width of the arena
+ */
 	@FXML
 	public void setPixelToCentimeterWidth() {
 		Alert alert = new Alert(AlertType.INFORMATION);
@@ -468,7 +542,11 @@ public class MainWindowController implements AutoTrackListener {
 
 		});
 	}
-
+/**
+ * 
+ * @throws FileNotFoundException if a file is not found
+ * Saves the JSON  file
+ */
 	@FXML
 	public void saveJSON() throws FileNotFoundException {
 		FileChooser fileChooser = new FileChooser();
@@ -481,7 +559,13 @@ public class MainWindowController implements AutoTrackListener {
 		}
 
 	}
-
+/**
+ * 
+ * @param savedFile JSON file that needs to be loaded
+ * @throws FileNotFoundException if no File is Found
+ * 
+ * Loads from a JSON file 
+ */
 	public void loadProject(File savedFile) throws FileNotFoundException {
 		project = ProjectData.loadFromFile(savedFile);
 		for (int i = 0; i < project.getTracks().size(); i++) {
@@ -489,7 +573,13 @@ public class MainWindowController implements AutoTrackListener {
 		}
 		chickSelect.setItems(chickIDs);
 	}
-
+/**
+ * 
+ * @param event 
+ * @throws Exception if no need to pause
+ * 
+ * Pauses the video when the user presses the pause button
+ */
 	@FXML
 	public void handlePause(ActionEvent event) throws Exception {
 
@@ -522,6 +612,7 @@ public class MainWindowController implements AutoTrackListener {
 		running = !running;
 	}
 
+	//Pulls the slider back to 0 when the video is done
 	private void handleReplay(int value) {
 		if (value == video.getEndFrameNum()) {
 			showFrameAt(0);
@@ -535,7 +626,9 @@ public class MainWindowController implements AutoTrackListener {
 			}
 		}
 	}
-
+/**
+ * Gathers the information inputted by the user about where the Origin is
+ */
 	@FXML
 	public void handleSetOrigin() {
 		myImageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
@@ -550,7 +643,11 @@ public class MainWindowController implements AutoTrackListener {
 
 		});
 	}
-
+/**
+ * @param state
+ * 
+ * disables the buttons until they are needed to be used
+ */
 	public void setAllButtons(boolean state) {
 		confirm.setDisable(state);
 		btnAutotrack.setDisable(state);
@@ -561,7 +658,9 @@ public class MainWindowController implements AutoTrackListener {
 		forward.setDisable(state);
 		previous.setDisable(state);
 	}
-
+ /**
+  * Checks the calibration of the information the user has inputted about the arena and origins
+  */
 	public void checkCalibration() {
 		project.setCalibrations(project.getNumCalibrations() + 1);
 		if (project.getNumCalibrations() == 5) {
@@ -572,7 +671,9 @@ public class MainWindowController implements AutoTrackListener {
 			alert.showAndWait();
 		}
 	}
-	
+	/**
+	 * Lets the user input an empty frame where there is no chicks in the video
+	 */
 	@FXML
 	public void setEmptyFrame() {
 		TextInputDialog dialog = new TextInputDialog("0");
@@ -587,10 +688,5 @@ public class MainWindowController implements AutoTrackListener {
 		checkCalibration();
 	}
 
-//		@FXML public void displayCurrentFrame() {
-//			textFieldCurFrameNum.setEditable(false);
-//			String currentFrame = "" + video.getCurrentFrameNum();
-//			textFieldCurFrameNum.setText(currentFrame);
-//		}
 
 }
