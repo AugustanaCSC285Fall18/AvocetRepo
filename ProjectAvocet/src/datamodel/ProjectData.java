@@ -20,11 +20,13 @@ public class ProjectData {
 	private Video video;
 	private List<AnimalTrack> tracks;
 	private List<AnimalTrack> unassignedSegments;
+	private int calibrations;
 	
 	public ProjectData(String videoFilePath) throws FileNotFoundException {
 		video = new Video(videoFilePath);
 		tracks = new ArrayList<>();
 		unassignedSegments = new ArrayList<>();
+		calibrations = 0;
 	}
 
 	public Video getVideo() {
@@ -105,6 +107,14 @@ public class ProjectData {
 		ProjectData data = gson.fromJson(jsonText, ProjectData.class);
 		data.getVideo().connectVideoCapture();
 		return data;
+	}
+	
+	public int getNumCalibrations() {
+		return calibrations;
+	}
+	
+	public void setCalibrations(int changeCalibrations) {
+		calibrations = changeCalibrations;
 	}
 }
 

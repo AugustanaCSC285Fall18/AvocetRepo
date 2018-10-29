@@ -4,6 +4,7 @@ import java.awt.Rectangle;
 import java.io.FileNotFoundException;
 
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 
@@ -18,6 +19,7 @@ public class Video {
 	private double xPixelsPerCm;
 	private double yPixelsPerCm;
 	private Rectangle arenaBounds; 
+	private Point origin = new Point();
 	
 		
 	public Video(String filePath) throws FileNotFoundException {
@@ -136,5 +138,18 @@ public class Video {
 			throw new FileNotFoundException("Unable to open video file: " + filePath);
 		}
 	}
+	
+	public void setOriginX(double x) {
+		origin.x = x;
+	}
+	
+	public void setOriginY(double y) {
+		origin.y = y;
+	}
+	
+	public Point getOrigin() {
+		return origin;
+	}
+
 
 }

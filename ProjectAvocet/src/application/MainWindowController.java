@@ -3,7 +3,6 @@ package application;
 import java.io.File;
 import java.io.FileInputStream;
 import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -13,6 +12,7 @@ import java.util.Collections;
 import java.io.IOException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +30,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -46,9 +47,10 @@ import javafx.scene.control.Label;
 
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 
 import javafx.stage.FileChooser;
@@ -119,23 +121,31 @@ public class MainWindowController implements AutoTrackListener {
 		sliderVideoTime.valueProperty().addListener((obs, oldV, newV) -> showFrameAt(newV.intValue()));
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		canvas.setOnMouseClicked((event) -> {
-			TimePoint tp = new TimePoint(event.getX()*aspectWidthRatio, event.getY()*aspectHeightRatio, (int) project.getVideo().getCurrentFrameNum());
+			TimePoint tp = new TimePoint(event.getX() * aspectWidthRatio, event.getY() * aspectHeightRatio,
+					(int) video.getCurrentFrameNum());
 			try {
-				TimePoint click = new TimePoint(event.getX(), event.getY(), project.getVideo().getCurrentFrameNum());
-				boolean segmentAdded = addSegment(click);
-				if (!segmentAdded) {
-					project.getTracks().get(chosenChickIndex).add(tp);
-					gc.setFill(Color.RED);
-					gc.fillOval(event.getX() - 5, event.getY() - 5, 10, 10);
-					sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
-					gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-					redrawPoints();
-					findNearbyTracks(tp, gc);
+				if (project.getVideo().getArenaBounds().contains(event.getX(), event.getY())) {
+					TimePoint click = new TimePoint(event.getX(), event.getY(), video.getCurrentFrameNum());
+					boolean segmentAdded = addSegment(click);
+					if (!segmentAdded) {
+						project.getTracks().get(chosenChickIndex).add(tp);
+						gc.setFill(Color.RED);
+						gc.fillOval(event.getX() - 5, event.getY() - 5, 10, 10);
+						sliderVideoTime.setValue(video.getCurrentFrameNum() + video.getFrameRate());
+						gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+						redrawPoints();
+						findNearbyTracks(tp, gc);
+					} else {
+						gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+						redrawPoints();
+						findNearbyTracks(tp, gc);
+					}
 				}
 				else {
-					gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-					redrawPoints();
-					findNearbyTracks(tp, gc);
+					Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setTitle("Error");
+					alert.setContentText("Please click within the arena bounds.");
+					alert.showAndWait();
 				}
 			} catch (Exception e) {
 				Alert alert = new Alert(AlertType.INFORMATION);
@@ -147,47 +157,50 @@ public class MainWindowController implements AutoTrackListener {
 		});
 
 	}
-	
+
 	public void redrawPoints() {
 		GraphicsContext gc = canvas.getGraphicsContext2D();
-		Video vid = project.getVideo();
+		Video vid = video;
 		if (chosenChickIndex >= 0) {
-			List<TimePoint> draw = project.getTracks().get(chosenChickIndex).getTimePointsInRange(vid.getCurrentFrameNum() - 90, vid.getCurrentFrameNum());
+			List<TimePoint> draw = project.getTracks().get(chosenChickIndex)
+					.getTimePointsInRange(vid.getCurrentFrameNum() - 90, vid.getCurrentFrameNum());
 			for (int i = 0; i < draw.size(); i++) {
 				TimePoint tp = draw.get(i);
 				if (tp != null) {
 					gc.setFill(Color.RED);
-					gc.fillOval(tp.getX()/aspectWidthRatio - 5, tp.getY()/aspectHeightRatio - 5, 10, 10);
+					gc.fillOval(tp.getX() / aspectWidthRatio - 5, tp.getY() / aspectHeightRatio - 5, 10, 10);
 				}
 
 			}
 		}
 	}
-	
+
 	public void findNearbyTracks(TimePoint tp, GraphicsContext gc) {
-		List<AnimalTrack> autoNear = project.getUnassignedSegmentsInRange(tp.getX(), tp.getY(), tp.getFrameNum() - 20, tp.getFrameNum() + 20, 30);
+		List<AnimalTrack> autoNear = project.getUnassignedSegmentsInRange(tp.getX(), tp.getY(), tp.getFrameNum() - 20,
+				tp.getFrameNum() + 20, 30);
 		for (int i = 0; i < autoNear.size(); i++) {
-				TimePoint draw = autoNear.get(i).getPositions().get(0);
-				gc.setFill(Color.BLUE);
-				gc.fillRect(draw.getX()/aspectWidthRatio-5, draw.getY()/aspectHeightRatio-5, 10, 10);
-				for (int j = 0; j < project.getUnassignedSegments().size(); j++) {
-					if (project.getUnassignedSegments().get(j).getID().equals(autoNear.get(i).getID())) {
-						project.getUnassignedSegments().remove(j);
-						break;
-					}
+			TimePoint draw = autoNear.get(i).getPositions().get(0);
+			gc.setFill(Color.BLUE);
+			gc.fillRect(draw.getX() / aspectWidthRatio - 5, draw.getY() / aspectHeightRatio - 5, 10, 10);
+			for (int j = 0; j < project.getUnassignedSegments().size(); j++) {
+				if (project.getUnassignedSegments().get(j).getID().equals(autoNear.get(i).getID())) {
+					project.getUnassignedSegments().remove(j);
+					break;
 				}
-			
+			}
+
 		}
 		inRange = autoNear;
 	}
-	
+
 	public boolean addSegment(TimePoint click) {
 		for (int i = 0; i < inRange.size(); i++) {
 			TimePoint test = inRange.get(i).getPositions().get(0);
-			if (click.getDistanceTo(test.getX()/aspectWidthRatio, test.getY()/aspectHeightRatio) < 5) {
+			if (click.getDistanceTo(test.getX() / aspectWidthRatio, test.getY() / aspectHeightRatio) < 5) {
 				project.getTracks().get(chosenChickIndex).getPositions().addAll(inRange.get(i).getPositions());
 				Collections.sort(project.getTracks().get(chosenChickIndex).getPositions(), new sortTimePoint());
-				sliderVideoTime.setValue(inRange.get(i).getPositions().get(inRange.get(i).getPositions().size()-1).getFrameNum()+30);
+				sliderVideoTime.setValue(
+						inRange.get(i).getPositions().get(inRange.get(i).getPositions().size() - 1).getFrameNum() + 30);
 				return true;
 			}
 		}
@@ -206,14 +219,18 @@ public class MainWindowController implements AutoTrackListener {
 		try {
 			if (createProject) {
 				project = new ProjectData(filePath);
+				setAllButtons(true);
 			}
-			sliderVideoTime.setMax(project.getVideo().getTotalNumFrames() - 1);
+			video = project.getVideo();
+			sliderVideoTime.setMax(video.getTotalNumFrames() - 1);
 			showFrameAt(0);
-			project.getVideo().setXPixelsPerCm(6.5); // these are just rough estimates!
-			project.getVideo().setYPixelsPerCm(6.7);
+			video.setXPixelsPerCm(6.5); // these are just rough estimates!
+			video.setYPixelsPerCm(6.7);
 			chosenChickIndex = -1;
-			aspectWidthRatio = (double)project.getVideo().getFrameWidth()/ (double)myImageView.boundsInParentProperty().get().getWidth();
-			aspectHeightRatio = (double)project.getVideo().getFrameHeight()/ (double)myImageView.boundsInParentProperty().get().getHeight();
+			aspectWidthRatio = (double) video.getFrameWidth()
+					/ (double) myImageView.boundsInParentProperty().get().getWidth();
+			aspectHeightRatio = (double) video.getFrameHeight()
+					/ (double) myImageView.boundsInParentProperty().get().getHeight();
 			canvas.setWidth(myImageView.boundsInParentProperty().get().getWidth());
 			canvas.setHeight(myImageView.boundsInParentProperty().get().getHeight());
 		} catch (FileNotFoundException e) {
@@ -224,19 +241,18 @@ public class MainWindowController implements AutoTrackListener {
 
 	public void showFrameAt(int frameNum) {
 		if (autotracker == null || !autotracker.isRunning()) {
-			project.getVideo().setCurrentFrameNum(frameNum);
-			Image curFrame = UtilsForOpenCV.matToJavaFXImage(project.getVideo().readFrame());
+			video.setCurrentFrameNum(frameNum);
+			Image curFrame = UtilsForOpenCV.matToJavaFXImage(video.readFrame());
 			myImageView.setImage(curFrame);
 
 			String currentFrame = "" + frameNum;
 			labelCurFrameNum.setText(currentFrame);
-		}		
+		}
 	}
 
 	@FXML
 	public void handleStartAutotracking() throws InterruptedException {
 		if (autotracker == null || !autotracker.isRunning()) {
-			this.video = project.getVideo();
 			video.setStartFrameNum(Integer.parseInt(textfieldStartFrame.getText()));
 			video.setEndFrameNum(Integer.parseInt(textfieldEndFrame.getText()));
 			autotracker = new AutoTracker();
@@ -280,7 +296,7 @@ public class MainWindowController implements AutoTrackListener {
 	}
 
 	@FXML
-	public void createChick() throws IOException{
+	public void createChick() throws IOException {
 		String name = chickName.getText();
 		chickName.setText("");
 		if (name.equals("")) {
@@ -295,7 +311,7 @@ public class MainWindowController implements AutoTrackListener {
 			project.getTracks().add(new AnimalTrack(name));
 			FXCollections.sort(chickIDs);
 		}
-		
+
 	}
 
 	// this method will get called repeatedly by the Autotracker after it analyzes
@@ -326,151 +342,254 @@ public class MainWindowController implements AutoTrackListener {
 		});
 
 	}
-	
-		
-		@FXML public void exportData() throws IOException {
-			FileChooser save = new FileChooser();
-			FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
-            save.getExtensionFilters().add(extFilter);
-			Stage close = (Stage) export.getScene().getWindow();
-			save.setTitle("Save CSV");
-			File file = save.showSaveDialog(close);
-			if(file != null){
-                project.exportProject(file);
-            }
-			close.close();
+
+	@FXML
+	public void exportData() throws IOException {
+		FileChooser save = new FileChooser();
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
+		save.getExtensionFilters().add(extFilter);
+		Stage close = (Stage) export.getScene().getWindow();
+		save.setTitle("Save CSV");
+		File file = save.showSaveDialog(close);
+		if (file != null) {
+			project.exportProject(file);
 		}
-		
-		@FXML public void forwardOneSec() {
-			GraphicsContext gc = canvas.getGraphicsContext2D();
-			gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() + project.getVideo().getFrameRate());
-			redrawPoints();
-		}
-		
-		@FXML public void previousOneSec() {
-			GraphicsContext gc = canvas.getGraphicsContext2D();
-			gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-			sliderVideoTime.setValue(project.getVideo().getCurrentFrameNum() - project.getVideo().getFrameRate() - 1);
-			redrawPoints();
-		}
-		
-		@FXML
-		public void setArenaBounds() {
-			Alert alert = new Alert(AlertType.INFORMATION);
-			alert.setTitle("Set Bounds");
-			alert.setHeaderText("Set the bounds for where the chicks will walk.");
-			alert.setContentText("Please click the three corners of the area where the chicks will be walking. Start by "
-					+ "clicking on the top left of the rectangle, then the top right, and finally the bottom left.");
-			alert.showAndWait();
-			ArrayList<Integer> clickedCorners = new ArrayList<Integer>();
-			Rectangle arenaBounds = new Rectangle(0, 0, 0, 0);
-			GraphicsContext gc = canvas.getGraphicsContext2D();
-			while (clickedCorners.size() < 3) {
-				if (clickedCorners.size() == 0) {
-					canvas.setOnMouseClicked((event) -> {
-						arenaBounds.setLocation((int)event.getX(), (int)event.getY());
-						clickedCorners.add(1);
-						gc.setFill(Color.DARKBLUE);
-						gc.fillOval(event.getX()-5, event.getY()-5, 10, 10);
-					});
-				}
-				
-				else if (clickedCorners.size() == 1) {
-					canvas.setOnMouseClicked((event) -> {
-						arenaBounds.setSize((int)(event.getX()-arenaBounds.getX()), 0);
-						clickedCorners.add(1);
-						gc.setFill(Color.DARKBLUE);
-						gc.fillOval(event.getX()-5, event.getY()-5, 10, 10);
-					});
-				}
-				else if (clickedCorners.size() == 2) {
-					canvas.setOnMouseClicked((event) -> {	
-						arenaBounds.setSize(0, (int)(event.getY()-arenaBounds.getY()));
-						clickedCorners.add(1);
-						gc.setFill(Color.DARKBLUE);
-						gc.fillOval(event.getX()-5, event.getY()-5, 10, 10);
-					});
+		close.close();
+	}
+
+	@FXML
+	public void forwardOneSec() {
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		sliderVideoTime.setValue(video.getCurrentFrameNum() + video.getFrameRate());
+		redrawPoints();
+	}
+
+	@FXML
+	public void previousOneSec() {
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+		sliderVideoTime.setValue(video.getCurrentFrameNum() - video.getFrameRate() - 1);
+		redrawPoints();
+	}
+
+	@FXML
+	public void setArenaBounds() {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Set Bounds");
+		alert.setHeaderText("Set the bounds for where the chicks will walk.");
+		alert.setContentText("Please click the three corners of the area where the chicks will be walking. Start by "
+				+ "clicking on the top left of the rectangle, then the top right, and finally the bottom left.");
+		alert.showAndWait();
+		Rectangle arenaBounds = new Rectangle(0, 0, 0, 0);
+		ArrayList<Point> vertices = new ArrayList<Point>();
+		myImageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				vertices.add(new Point(event.getX(), event.getY()));
+				if (vertices.size() >= 3) {
+					arenaBounds.setBounds((int) vertices.get(0).x, (int) vertices.get(0).y,
+							(int) (vertices.get(1).x - vertices.get(0).x),
+							(int) (vertices.get(2).y - vertices.get(0).y));
+					project.getVideo().setArenaBounds(arenaBounds);
+					myImageView.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+					Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setTitle("Arena Bounds Set");
+					alert.setHeaderText("The Arena Bounds have been set");
+					checkCalibration();
 				}
 			}
-			System.out.println(arenaBounds);
-			project.getVideo().setArenaBounds(arenaBounds);
+		});
+
+	}
+
+	@FXML
+	public void setPixelToCentimeterHeight() {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Set Pixel to Centimeter Ratio");
+		alert.setHeaderText("Please click two points between which you know the distance in centimeters vertically.");
+		alert.showAndWait();
+		ArrayList<Point> distance = new ArrayList<Point>();
+		myImageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				distance.add(new Point(event.getX(), event.getY()));
+				if (distance.size() >= 2) {
+					double xDist = distance.get(1).x - distance.get(0).x;
+					double yDist = distance.get(1).y - distance.get(0).y;
+					double ratio = xDist / yDist;
+					TextInputDialog dialog = new TextInputDialog("0");
+					dialog.setTitle("Enter Distance");
+					dialog.setContentText("Please enter the distance between the points in centimeters:");
+					Optional<String> result = dialog.showAndWait();
+					double cmDistance = Double
+							.parseDouble(result.toString().substring(9, result.toString().length() - 1));
+					double cmDistanceVertical = Math.sqrt(cmDistance * cmDistance / (ratio * ratio + 1));
+					project.getVideo().setYPixelsPerCm(Math.abs(yDist / cmDistanceVertical));
+					myImageView.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+					checkCalibration();
+				}
+			}
+
+		});
+	}
+
+	@FXML
+	public void setPixelToCentimeterWidth() {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Set Pixel to Centimeter Ratio");
+		alert.setHeaderText("Please click two points between which you know the distance in centimeters horizontally.");
+		alert.showAndWait();
+		ArrayList<Point> distance = new ArrayList<Point>();
+		myImageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				distance.add(new Point(event.getX(), event.getY()));
+				if (distance.size() >= 2) {
+					double xDist = distance.get(1).x - distance.get(0).x;
+					double yDist = distance.get(1).y - distance.get(0).y;
+					double ratio = yDist / xDist;
+					TextInputDialog dialog = new TextInputDialog("0");
+					dialog.setTitle("Enter Distance");
+					dialog.setContentText("Please enter the distance between the points in centimeters:");
+					Optional<String> result = dialog.showAndWait();
+					double cmDistance = Double
+							.parseDouble(result.toString().substring(9, result.toString().length() - 1));
+					double cmDistanceHorizontal = Math.sqrt(cmDistance * cmDistance / (ratio * ratio + 1));
+					project.getVideo().setYPixelsPerCm(Math.abs(xDist / cmDistanceHorizontal));
+					System.out.println(Math.abs(xDist / cmDistanceHorizontal));
+					myImageView.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+					checkCalibration();
+				}
+			}
+
+		});
+	}
+
+	@FXML
+	public void saveJSON() throws FileNotFoundException {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Save Progess");
+		File file = fileChooser.showSaveDialog(stage);
+		try {
+			project.saveToFile(file);
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
 		}
-		
-		@FXML
-		public void setPixelToCentimeterHeight() {
-			
+
+	}
+
+	public void loadProject(File savedFile) throws FileNotFoundException {
+		project = ProjectData.loadFromFile(savedFile);
+		for (int i = 0; i < project.getTracks().size(); i++) {
+			chickIDs.add(project.getTracks().get(i).getID());
 		}
-		
-		@FXML
-		public void setPixelToCentimeterWidth() {
-			
+		chickSelect.setItems(chickIDs);
+	}
+
+	@FXML
+	public void handlePause(ActionEvent event) throws Exception {
+
+		if (!running && video.getCurrentFrameNum() <= video.getEndFrameNum()) {
+			pausePlay.setText("Pause");
+
+			Runnable frameGrabber = new Runnable() {
+
+				@Override
+				public void run() {
+
+					sliderVideoTime.setValue(video.getCurrentFrameNum());
+					if (video.getCurrentFrameNum() == video.getEndFrameNum()) {
+						handleReplay(video.getEndFrameNum());
+					}
+				}
+			};
+			Platform.runLater(() -> {
+				labelCurFrameNum.setText("" + video.getCurrentFrameNum());
+			});
+			this.timer = Executors.newSingleThreadScheduledExecutor();
+			this.timer.scheduleAtFixedRate(frameGrabber, 0, Math.round(video.getFrameRate()), TimeUnit.MILLISECONDS);
+		} else {
+			pausePlay.setText("Play");
+			// stop the timer
+			this.timer.shutdown();
+			this.timer.awaitTermination(33, TimeUnit.MILLISECONDS);
+
 		}
-		
-		@FXML
-		public void saveJSON() throws FileNotFoundException {
-			FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle("Save Progess");
-			File file = fileChooser.showSaveDialog(stage);
+		running = !running;
+	}
+
+	private void handleReplay(int value) {
+		if (value == video.getEndFrameNum()) {
+			showFrameAt(0);
+			sliderVideoTime.setValue(0);
+			// pausePlay.setText("Replay");
+			this.timer.shutdown();
 			try {
-				project.saveToFile(file);
-			} catch (FileNotFoundException e1) {
-				e1.printStackTrace();
-			}
-
-		}
-
-		public void loadProject(File savedFile) throws FileNotFoundException {
-			project = ProjectData.loadFromFile(savedFile);
-		}
-
-		@FXML
-			public void handlePause(ActionEvent event) throws Exception {
-
-				if (!running && video.getCurrentFrameNum() <= video.getEndFrameNum()) {
-					pausePlay.setText("Pause");
-
-					Runnable frameGrabber = new Runnable() {
-
-						@Override
-						public void run() {
-
-							sliderVideoTime.setValue(video.getCurrentFrameNum());
-							if (video.getCurrentFrameNum() == video.getEndFrameNum()) {
-								handleReplay(video.getEndFrameNum());
-							}
-						}
-					};
-					Platform.runLater(() -> {labelCurFrameNum.setText("" + video.getCurrentFrameNum());});
-					this.timer = Executors.newSingleThreadScheduledExecutor();
-					this.timer.scheduleAtFixedRate(frameGrabber, 0, Math.round(video.getFrameRate()), TimeUnit.MILLISECONDS);
-				} else {
-					pausePlay.setText("Play");
-					// stop the timer
-					this.timer.shutdown();
-					this.timer.awaitTermination(33, TimeUnit.MILLISECONDS);
-
-				}
-				running = !running;
-			}
-
-		private void handleReplay(int value) {
-			if (value == video.getEndFrameNum()) {
-				showFrameAt(0);
-				sliderVideoTime.setValue(0);
-				// pausePlay.setText("Replay");
-				this.timer.shutdown();
-				try {
-					this.timer.awaitTermination(33, TimeUnit.MILLISECONDS);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				this.timer.awaitTermination(33, TimeUnit.MILLISECONDS);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
-		
+	}
+
+	@FXML
+	public void handleSetOrigin() {
+		myImageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				video.setOriginX(event.getX());
+				video.setOriginY(event.getY());
+				myImageView.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+				checkCalibration();
+			}
+
+		});
+	}
+
+	public void setAllButtons(boolean state) {
+		confirm.setDisable(state);
+		btnAutotrack.setDisable(state);
+		pausePlay.setDisable(state);
+		newChick.setDisable(state);
+		export.setDisable(state);
+		canvas.setDisable(state);
+		forward.setDisable(state);
+		previous.setDisable(state);
+	}
+
+	public void checkCalibration() {
+		project.setCalibrations(project.getNumCalibrations() + 1);
+		if (project.getNumCalibrations() == 5) {
+			setAllButtons(false);
+			Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setTitle("Calibration Completed!");
+			alert.setHeaderText("The calibration has been completed. You can now begin tracking the chicks.");
+			alert.showAndWait();
+		}
+	}
+	
+	@FXML
+	public void setEmptyFrame() {
+		TextInputDialog dialog = new TextInputDialog("0");
+		dialog.setTitle("Enter Empty Frame");
+		dialog.setContentText("Please enter a time that has no chicks in the area they will be tracked. You can look at"
+				+ "the time using the slider bar. Enter the time in the format (minute:second).");
+		Optional<String> result = dialog.showAndWait();
+		String minute = result.toString().substring(9, result.toString().indexOf(":"));
+		String second = result.toString().substring(result.toString().indexOf(":")+1, result.toString().length()-1);
+		int totalSeconds = Integer.parseInt(minute)*60+Integer.parseInt(second);
+		project.getVideo().setEmptyFrameNum((int)(totalSeconds*project.getVideo().getFrameRate()));
+		checkCalibration();
+	}
+
 //		@FXML public void displayCurrentFrame() {
 //			textFieldCurFrameNum.setEditable(false);
-//			String currentFrame = "" + project.getVideo().getCurrentFrameNum();
+//			String currentFrame = "" + video.getCurrentFrameNum();
 //			textFieldCurFrameNum.setText(currentFrame);
 //		}
 
