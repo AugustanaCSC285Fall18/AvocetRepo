@@ -1,13 +1,9 @@
 package application;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.awt.Rectangle;
-import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.io.IOException;
 
@@ -30,7 +26,6 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -44,24 +39,19 @@ import javafx.scene.control.ProgressBar;
 
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
 
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import utils.UtilsForOpenCV;
 
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.stage.Stage;
 
 public class MainWindowController implements AutoTrackListener {
 
@@ -71,7 +61,7 @@ public class MainWindowController implements AutoTrackListener {
 	private Slider sliderVideoTime;
 
 	@FXML
-	private Label labelCurFrameNum;
+	private Label labelCurTime;
 	@FXML
 	private Button pausePlay;
 
@@ -96,7 +86,7 @@ public class MainWindowController implements AutoTrackListener {
 	@FXML
 	private Label tracking;
 	@FXML
-	private Button export;
+	private MenuItem export;
 	@FXML
 	private Canvas canvas;
 	@FXML
@@ -142,6 +132,7 @@ public class MainWindowController implements AutoTrackListener {
 					}
 				}
 				else {
+					//All Alert and TextDialog Code from: https://code.makery.ch/blog/javafx-dialogs-official/
 					Alert alert = new Alert(AlertType.INFORMATION);
 					alert.setTitle("Error");
 					alert.setContentText("Please click within the arena bounds.");
@@ -245,8 +236,10 @@ public class MainWindowController implements AutoTrackListener {
 			Image curFrame = UtilsForOpenCV.matToJavaFXImage(video.readFrame());
 			myImageView.setImage(curFrame);
 
-			String currentFrame = "" + frameNum;
-			labelCurFrameNum.setText(currentFrame);
+			double totalSeconds = video.convertFrameNumsToSeconds(video.getCurrentFrameNum());
+			int minute = (int)(totalSeconds/60);
+			int seconds = (int)(totalSeconds%60);
+			labelCurTime.setText("" + minute+":"+seconds);
 		}
 	}
 
@@ -345,10 +338,11 @@ public class MainWindowController implements AutoTrackListener {
 
 	@FXML
 	public void exportData() throws IOException {
+		//FileChooser saveDialog Code from: https://www.mkyong.com/java/how-to-export-data-to-csv-file-java/
 		FileChooser save = new FileChooser();
 		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
 		save.getExtensionFilters().add(extFilter);
-		Stage close = (Stage) export.getScene().getWindow();
+		Stage close = (Stage) confirm.getScene().getWindow();
 		save.setTitle("Save CSV");
 		File file = save.showSaveDialog(close);
 		if (file != null) {
@@ -397,6 +391,7 @@ public class MainWindowController implements AutoTrackListener {
 					Alert alert = new Alert(AlertType.INFORMATION);
 					alert.setTitle("Arena Bounds Set");
 					alert.setHeaderText("The Arena Bounds have been set");
+					alert.showAndWait();
 					checkCalibration();
 				}
 			}
@@ -474,6 +469,8 @@ public class MainWindowController implements AutoTrackListener {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Save Progess");
 		File file = fileChooser.showSaveDialog(stage);
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
+		fileChooser.getExtensionFilters().add(extFilter);
 		try {
 			project.saveToFile(file);
 		} catch (FileNotFoundException e1) {
@@ -500,7 +497,6 @@ public class MainWindowController implements AutoTrackListener {
 
 				@Override
 				public void run() {
-
 					sliderVideoTime.setValue(video.getCurrentFrameNum());
 					if (video.getCurrentFrameNum() == video.getEndFrameNum()) {
 						handleReplay(video.getEndFrameNum());
@@ -508,7 +504,10 @@ public class MainWindowController implements AutoTrackListener {
 				}
 			};
 			Platform.runLater(() -> {
-				labelCurFrameNum.setText("" + video.getCurrentFrameNum());
+				double totalSeconds = video.convertFrameNumsToSeconds(video.getCurrentFrameNum());
+				int minute = (int)(totalSeconds/60);
+				int seconds = (int)(totalSeconds%60);
+				labelCurTime.setText("" + minute+":"+seconds);
 			});
 			this.timer = Executors.newSingleThreadScheduledExecutor();
 			this.timer.scheduleAtFixedRate(frameGrabber, 0, Math.round(video.getFrameRate()), TimeUnit.MILLISECONDS);
@@ -586,7 +585,20 @@ public class MainWindowController implements AutoTrackListener {
 		project.getVideo().setEmptyFrameNum((int)(totalSeconds*project.getVideo().getFrameRate()));
 		checkCalibration();
 	}
-
+	
+	@FXML
+	public void getTotalDistance() throws IOException {
+		FileChooser save = new FileChooser();
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("CSV files (*.csv)", "*.csv");
+		save.getExtensionFilters().add(extFilter);
+		Stage close = (Stage) confirm.getScene().getWindow();
+		save.setTitle("Save Total Distance");
+		File file = save.showSaveDialog(close);
+		if (file != null) {
+			project.exportTotalDistance(file);
+		}
+	}
+	
 //		@FXML public void displayCurrentFrame() {
 //			textFieldCurFrameNum.setEditable(false);
 //			String currentFrame = "" + video.getCurrentFrameNum();

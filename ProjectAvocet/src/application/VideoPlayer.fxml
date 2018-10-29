@@ -16,5 +16,6 @@
       </Label>
       <TextField fx:id="textField" layoutX="81.0" layoutY="176.0" prefHeight="25.0" prefWidth="212.0" />
       <Button fx:id="btnStart" layoutX="189.0" layoutY="247.0" mnemonicParsing="false" onAction="#start" prefHeight="33.0" prefWidth="64.0" text="Start" />
+      <Button mnemonicParsing="false" onAction="#showAbout" text="About" />
    </children>
 </AnchorPane>

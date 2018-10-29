@@ -39,9 +39,20 @@ public class VideoPlayerController {
 	}
 	
 	@FXML
+	public void showAbout() {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("About");
+		alert.setHeaderText("Team Avocet Members: Paul Cabrera, Jack Miller, Tuan Truong, Michael Wardach\n"
+				+ "Project Supervisor: Forrest Stonedahl\n"
+				+ "Libraries Used: OpenCV, GSON, JUnit 5, JavaFX");
+		alert.showAndWait();
+	}
+
+	
+	@FXML
 	public void start() throws IOException {
 		String filePath = chosenFile.getAbsolutePath();
-		String extension = filePath.substring(filePath.length() - 3);
+		String extension = filePath.substring(filePath.length() - 4);
 		try {
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
 			AnchorPane root = (AnchorPane) loader.load();
@@ -51,7 +62,7 @@ public class VideoPlayerController {
 
 			Stage primary = (Stage) btnStart.getScene().getWindow();
 			nextController.initializeWithStage(primary);
-			if (extension.equals("txt")) {
+			if (extension.equals("json")) {
 				nextController.loadProject(chosenFile);
 				nextController.loadVideo(chosenFile.getAbsolutePath(), false);
 			} else {

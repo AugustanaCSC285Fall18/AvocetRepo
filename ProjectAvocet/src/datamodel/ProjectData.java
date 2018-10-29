@@ -3,6 +3,7 @@ package datamodel;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,8 +14,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import csv.CSVUtils;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 
 public class ProjectData {
 	private Video video;
@@ -64,17 +63,20 @@ public class ProjectData {
 	}
 	
 	public FileWriter exportProject(File file) {
+		//Export Code from: https://www.mkyong.com/java/how-to-export-data-to-csv-file-java/
 		try {
 			FileWriter writer = new FileWriter(file);
-			CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "X-Coordinate", "Y-Coordinate", "Frame Number"), ',');
+			CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "X-Coordinate", "Y-Coordinate", "Frame Number", "Distance From Origin(cm)"), ',');
 			for (int i = 0; i < tracks.size(); i++) {
 				for (int j = 0; j < tracks.get(i).getPositions().size(); j++) {
 					TimePoint currentTimePoint = tracks.get(i).getPositions().get(j);
 					String name = "" + tracks.get(i).getID();
-					String x = "" + currentTimePoint.getX();
-					String y = "" + currentTimePoint.getY();
+					String x = "" + ((currentTimePoint.getX()-video.getOrigin().x)*video.getXPixelsPerCm());
+					String y = "" + ((currentTimePoint.getY()-video.getOrigin().y)*video.getYPixelsPerCm()*-1);
 					String frame = "" + currentTimePoint.getFrameNum();
-					CSVUtils.writeLine(writer, Arrays.asList(name, x, y, frame), ',');
+					String distanceFromOrigin = "" + (currentTimePoint.getDistanceTo(video.getOrigin().x, video.getOrigin().y))
+							*video.getAvgPixelsPerCm();
+					CSVUtils.writeLine(writer, Arrays.asList(name, x, y, frame, distanceFromOrigin), ',');
 				}
 			}
 			writer.flush();
@@ -115,6 +117,23 @@ public class ProjectData {
 	
 	public void setCalibrations(int changeCalibrations) {
 		calibrations = changeCalibrations;
+	}
+	
+	public FileWriter exportTotalDistance(File file) throws IOException {
+		FileWriter writer = new FileWriter(file);
+		CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "Total Distance in Centimeters"), ',');
+		for (AnimalTrack track: tracks) {
+			double totalDistance = 0;
+			for (int i = 0; i < track.getPositions().size()-1; i++) {
+				totalDistance += track.getPositions().get(i).getDistanceTo(track.getPositions().get(i+1));
+			}
+			String name = track.getID();
+			String distance = ""+(totalDistance/video.getAvgPixelsPerCm());
+			CSVUtils.writeLine(writer, Arrays.asList(name, distance), ',');
+		}
+		writer.flush();
+		writer.close();
+		return writer;
 	}
 }
 

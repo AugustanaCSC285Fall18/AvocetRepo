@@ -37,32 +37,20 @@
       <TextField fx:id="chickName" layoutX="688.0" layoutY="146.0" />
       <Button fx:id="newChick" layoutX="712.0" layoutY="184.0" mnemonicParsing="false" onAction="#createChick" text="Track new chick" />
       <Label fx:id="tracking" layoutX="677.0" layoutY="110.0" prefHeight="25.0" prefWidth="170.0" text="Tracking: " />
-      <Button fx:id="export" layoutX="804.0" layoutY="451.0" mnemonicParsing="false" onAction="#exportData" prefHeight="25.0" prefWidth="67.0" text="Export" />
       <Label layoutX="14.0" layoutY="464.0" prefHeight="25.0" prefWidth="68.0" text="Start Frame:" />
       <TextField fx:id="textfieldStartFrame" layoutX="82.0" layoutY="464.0" prefHeight="25.0" prefWidth="100.0" text="0" />
       <Label layoutX="191.0" layoutY="464.0" prefHeight="25.0" prefWidth="67.0" text="End Frame:" />
       <TextField fx:id="textfieldEndFrame" layoutX="260.0" layoutY="464.0" prefHeight="25.0" prefWidth="100.0" text="3000" />
-      <Label layoutX="14.0" layoutY="499.0" prefHeight="25.0" prefWidth="85.0" text="Current Frame:" />
+      <Label layoutX="14.0" layoutY="499.0" prefHeight="25.0" prefWidth="35.0" text="Time:" />
       <Button fx:id="forward" layoutX="364.0" layoutY="425.0" mnemonicParsing="false" onAction="#forwardOneSec" text="Forward" />
       <Button fx:id="previous" layoutX="232.0" layoutY="425.0" mnemonicParsing="false" onAction="#previousOneSec" text="Previous" />
-      <Label fx:id="labelCurFrameNum" layoutX="99.0" layoutY="500.0" prefHeight="25.0" prefWidth="100.0" text="0">
+      <Label fx:id="labelCurTime" layoutX="52.0" layoutY="499.0" prefHeight="25.0" prefWidth="100.0" text="0">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
-      <Button layoutX="803.0" layoutY="425.0" mnemonicParsing="false" onAction="#saveJSON" prefHeight="25.0" prefWidth="67.0" text="Save" />
       <MenuBar>
         <menus>
-          <Menu mnemonicParsing="false" text="File">
-            <items>
-              <MenuItem mnemonicParsing="false" text="Close" />
-            </items>
-          </Menu>
-          <Menu mnemonicParsing="false" text="Edit">
-            <items>
-              <MenuItem mnemonicParsing="false" text="Delete" />
-            </items>
-          </Menu>
           <Menu mnemonicParsing="false" text="Calibration">
             <items>
               <MenuItem fx:id="setOriginBtn" mnemonicParsing="false" onAction="#handleSetOrigin" text="Set Origin" />
@@ -74,8 +62,13 @@
           </Menu>
             <Menu mnemonicParsing="false" text="Export">
               <items>
-                <MenuItem mnemonicParsing="false" text="Save Progress" />
-                  <MenuItem mnemonicParsing="false" text="Export Spreadsheet" />
+                <MenuItem mnemonicParsing="false" onAction="#saveJSON" text="Save Progress" />
+                  <MenuItem fx:id="export" mnemonicParsing="false" onAction="#exportData" text="Export Spreadsheet" />
+              </items>
+            </Menu>
+            <Menu mnemonicParsing="false" text="Analysis">
+              <items>
+                  <MenuItem mnemonicParsing="false" onAction="#getTotalDistance" text="Total Distance Traveled" />
               </items>
             </Menu>
         </menus>
