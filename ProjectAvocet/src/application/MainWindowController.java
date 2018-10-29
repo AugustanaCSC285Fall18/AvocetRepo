@@ -634,7 +634,7 @@ public class MainWindowController implements AutoTrackListener {
 	public void handleSetOrigin() {
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Set Origin");
-		alert.setHeaderText("Please click two points where you would like the origin to be set.");
+		alert.setHeaderText("Please click where you would like the origin to be set.");
 		alert.showAndWait();
 		myImageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 
