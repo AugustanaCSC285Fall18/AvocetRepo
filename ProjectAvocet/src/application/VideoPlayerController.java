@@ -23,10 +23,9 @@ public class VideoPlayerController {
 	File chosenFile;
 	private MainWindowController nextController;
 	
-	@FXML public void initialize() {
-		
-	}
-	
+	/**
+	 * Allows user to browse for file to start video
+	 */
 	@FXML public void handleBrowse() {
 		try {
 		FileChooser fileChooser = new FileChooser();
@@ -38,6 +37,9 @@ public class VideoPlayerController {
 		}
 	}
 	
+	/**
+	 * Shows alert dialog showing the about page with information about the program
+	 */
 	@FXML
 	public void showAbout() {
 		Alert alert = new Alert(AlertType.INFORMATION);
@@ -48,12 +50,18 @@ public class VideoPlayerController {
 		alert.showAndWait();
 	}
 
-	
+	/**
+	 * Opens up window with tracking with new project if video file is selected or in progress project
+	 * if json file is selected
+	 * @throws IOException
+	 */
 	@FXML
 	public void start() throws IOException {
-		String filePath = chosenFile.getAbsolutePath();
-		String extension = filePath.substring(filePath.length() - 4);
+		
 		try {
+			String filePath = chosenFile.getAbsolutePath();
+			String extension = filePath.substring(filePath.length() - 4);
+			
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
 			AnchorPane root = (AnchorPane) loader.load();
 			nextController = loader.getController();
@@ -73,7 +81,7 @@ public class VideoPlayerController {
 			Alert alert = new Alert(AlertType.INFORMATION);
 			alert.setTitle("Error");
 			alert.setHeaderText("Invalid File Choosen");
-			alert.setContentText("Please choose a valid file");
+			alert.setContentText("Please choose a valid video file");
 			alert.showAndWait();
 		}
 	}

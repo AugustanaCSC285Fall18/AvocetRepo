@@ -8,15 +8,23 @@ public class AnimalTrack {
 	private static final String UNNAMED_ID = "<<unassigned>>";
 	private List<TimePoint> positions;
 	
+	/**
+	 * 
+	 * @param id names of the chicks to be track inputted by the user
+	 * Adds the points of the chick to an Arraylist
+	 */
 	public AnimalTrack(String id) {
 		this.animalID = id;
 		positions = new ArrayList<TimePoint>();
 	}
-	
+	/**
+	 * 
+	 * @param pt adds point to the arraylist
+	 */
 	public void add(TimePoint pt) {
 		positions.add(pt);
 	}
-	
+
 	public boolean hasIDAssigned() {
 		return !animalID.equals(UNNAMED_ID);
 	}
@@ -29,6 +37,14 @@ public class AnimalTrack {
 		return positions.get(index);
 	}
 	
+	/**
+	 * 
+	 * @param startFrame start frame to calculate
+	 * @param endFrame end frame to calculate
+	 * @return the timepoints in the range of the two inputted
+	 * 
+	 * Finds and returns timepoints in the range of the two timepoints
+	 */
 	public List<TimePoint> getTimePointsInRange(int startFrame, int endFrame) {
 		List<TimePoint> timepoints = new ArrayList<TimePoint>();
 		for (int i = startFrame; i <= endFrame; i++) {
@@ -58,6 +74,14 @@ public class AnimalTrack {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param startFrameNum start frame to calulate
+	 * @param endFrameNum end frame to calculate
+	 * @return the timepoints within the two
+	 * 
+	 * Finds the timepoints within an interval of the two inputted time points
+	 */
 	public List<TimePoint> getTimePointsWithinInterval(int startFrameNum, int endFrameNum) {
 		List<TimePoint> pointsInInterval = new ArrayList<>();
 		for (TimePoint pt : positions) {

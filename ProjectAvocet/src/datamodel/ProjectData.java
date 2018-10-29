@@ -62,6 +62,11 @@ public class ProjectData {
 		tracks.add(track);
 	}
 	
+	/**
+	 * creates a CSV file of the chicks and their TimePoints along with the distance from the origin for each TimePoint
+	 * @param file - the file that will be exported
+	 * @return - the FileWriter with the file that will be exported
+	 */
 	public FileWriter exportProject(File file) {
 		//Export Code from: https://www.mkyong.com/java/how-to-export-data-to-csv-file-java/
 		try {
@@ -119,6 +124,11 @@ public class ProjectData {
 		calibrations = changeCalibrations;
 	}
 	
+	/**
+	 * @param file - file that will be exported
+	 * @return the FileWriter with the file that will be exported
+	 * creates a CSV file of the total distance traveled by each chick
+	 */
 	public FileWriter exportTotalDistance(File file) throws IOException {
 		FileWriter writer = new FileWriter(file);
 		CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "Total Distance in Centimeters"), ',');
