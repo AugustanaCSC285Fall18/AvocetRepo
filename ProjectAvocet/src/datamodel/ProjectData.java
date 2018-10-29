@@ -71,13 +71,14 @@ public class ProjectData {
 		//Export Code from: https://www.mkyong.com/java/how-to-export-data-to-csv-file-java/
 		try {
 			FileWriter writer = new FileWriter(file);
-			CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "X-Coordinate", "Y-Coordinate", "Frame Number", "Distance From Origin(cm)"), ',');
+			CSVUtils.writeLine(writer, Arrays.asList("Chick ID", "Horizontal Distance From Origin", "Vertical Distance From Origin",
+					"Frame Number", "Distance From Origin(cm)"), ',');
 			for (int i = 0; i < tracks.size(); i++) {
 				for (int j = 0; j < tracks.get(i).getPositions().size(); j++) {
 					TimePoint currentTimePoint = tracks.get(i).getPositions().get(j);
 					String name = "" + tracks.get(i).getID();
-					String x = "" + ((currentTimePoint.getX()-video.getOrigin().x)*video.getXPixelsPerCm());
-					String y = "" + ((currentTimePoint.getY()-video.getOrigin().y)*video.getYPixelsPerCm()*-1);
+					String x = "" + ((currentTimePoint.getX()-video.getOrigin().x)/video.getXPixelsPerCm());
+					String y = "" + ((currentTimePoint.getY()-video.getOrigin().y)/video.getYPixelsPerCm()*-1);
 					String frame = "" + currentTimePoint.getFrameNum();
 					String distanceFromOrigin = "" + (currentTimePoint.getDistanceTo(video.getOrigin().x, video.getOrigin().y))
 							*video.getAvgPixelsPerCm();

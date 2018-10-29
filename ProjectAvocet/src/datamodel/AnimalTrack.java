@@ -37,22 +37,6 @@ public class AnimalTrack {
 		return positions.get(index);
 	}
 	
-	/**
-	 * 
-	 * @param startFrame start frame to calculate
-	 * @param endFrame end frame to calculate
-	 * @return the timepoints in the range of the two inputted
-	 * 
-	 * Finds and returns timepoints in the range of the two timepoints
-	 */
-	public List<TimePoint> getTimePointsInRange(int startFrame, int endFrame) {
-		List<TimePoint> timepoints = new ArrayList<TimePoint>();
-		for (int i = startFrame; i <= endFrame; i++) {
-			timepoints.add(this.getTimePointAtTime(i));
-		}
-		return timepoints;
-	}
-	
 	public List<TimePoint> getPositions() {
 		return positions;
 	}

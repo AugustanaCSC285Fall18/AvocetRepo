@@ -63,6 +63,8 @@ public class MainWindowController implements AutoTrackListener {
 	@FXML
 	private Label labelCurTime;
 	@FXML
+	private Label labelCurFrameNum;
+	@FXML
 	private Button pausePlay;
 
 	@FXML
@@ -159,7 +161,7 @@ public class MainWindowController implements AutoTrackListener {
 		Video vid = video;
 		if (chosenChickIndex >= 0) {
 			List<TimePoint> draw = project.getTracks().get(chosenChickIndex)
-					.getTimePointsInRange(vid.getCurrentFrameNum() - 90, vid.getCurrentFrameNum());
+					.getTimePointsWithinInterval(vid.getCurrentFrameNum() - 90, vid.getCurrentFrameNum());
 			for (int i = 0; i < draw.size(); i++) {
 				TimePoint tp = draw.get(i);
 				if (tp != null) {
@@ -278,6 +280,7 @@ public class MainWindowController implements AutoTrackListener {
 			int minute = (int)(totalSeconds/60);
 			int seconds = (int)(totalSeconds%60);
 			labelCurTime.setText("" + minute+":"+seconds);
+			labelCurFrameNum.setText("" + video.getCurrentFrameNum());
 		}
 	}
 
@@ -529,7 +532,6 @@ public class MainWindowController implements AutoTrackListener {
 							.parseDouble(result.toString().substring(9, result.toString().length() - 1));
 					double cmDistanceHorizontal = Math.sqrt(cmDistance * cmDistance / (ratio * ratio + 1));
 					project.getVideo().setYPixelsPerCm(Math.abs(xDist / cmDistanceHorizontal));
-					System.out.println(Math.abs(xDist / cmDistanceHorizontal));
 					myImageView.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
 					checkCalibration();
 				}
@@ -545,10 +547,10 @@ public class MainWindowController implements AutoTrackListener {
 	@FXML
 	public void saveJSON() throws FileNotFoundException {
 		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Save Progess");
-		File file = fileChooser.showSaveDialog(stage);
 		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
 		fileChooser.getExtensionFilters().add(extFilter);
+		fileChooser.setTitle("Save Progess");
+		File file = fileChooser.showSaveDialog(stage);
 		try {
 			project.saveToFile(file);
 		} catch (FileNotFoundException e1) {
@@ -630,6 +632,10 @@ public class MainWindowController implements AutoTrackListener {
  */
 	@FXML
 	public void handleSetOrigin() {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Set Origin");
+		alert.setHeaderText("Please click two points where you would like the origin to be set.");
+		alert.showAndWait();
 		myImageView.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 
 			@Override
@@ -638,6 +644,10 @@ public class MainWindowController implements AutoTrackListener {
 				video.setOriginY(event.getY());
 				myImageView.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
 				checkCalibration();
+				Alert alert = new Alert(AlertType.INFORMATION);
+				alert.setTitle("Origin Set");
+				alert.setHeaderText("The origin has been set.");
+				alert.showAndWait();
 			}
 
 		});

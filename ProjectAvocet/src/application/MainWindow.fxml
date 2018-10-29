@@ -73,6 +73,12 @@
             </Menu>
         </menus>
       </MenuBar>
+      <Label layoutX="95.0" layoutY="503.0" text="Current Frame Num:" />
+      <Label fx:id="labelCurFrameNum" layoutX="211.0" layoutY="503.0" text="0">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
 
 
   </children> 
